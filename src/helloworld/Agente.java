@@ -48,7 +48,6 @@ public class Agente extends SingleAgent {
         this.inbox  = null;
         this.conversationID = "";
         this.reply_withID = "";
-        
         System.out.println("\n\n\nHola Mundo soy un agente llamado " + this.getName());
 
     }
