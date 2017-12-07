@@ -10,5 +10,5 @@ package helloworld;
  * @author Grego
  */
 public enum TipoVehiculo {
-    COCHE,CAMION,DROM;
+    COCHE,CAMION,DRON;
 }
