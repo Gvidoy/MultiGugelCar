@@ -33,6 +33,7 @@ public class Agente extends SingleAgent {
     private ACLMessage outbox;
     private ACLMessage inbox;
     private String conversationID;
+    private String reply_withID;
    
 
     public Agente() throws Exception {
@@ -45,7 +46,8 @@ public class Agente extends SingleAgent {
         
         this.outbox = null;
         this.inbox  = null;
-        this.conversationID = "";  
+        this.conversationID = "";
+        this.reply_withID = "";
         System.out.println("\n\n\nHola Mundo soy un agente llamado " + this.getName());
 
     }
@@ -56,7 +58,11 @@ public class Agente extends SingleAgent {
 
         try {
             subscribe();
-            
+           checkin();
+            refuel();
+            doQuery_ref();
+            performMove("moveS");
+
             cancel();
       
         } catch (InterruptedException ex) {
@@ -121,7 +127,7 @@ public class Agente extends SingleAgent {
     };
     
     /**
-    * @author Dani
+    * @author Dani,Oleksandr
     */
     public boolean cancel(){
                 
@@ -151,8 +157,168 @@ public class Agente extends SingleAgent {
     
 
  
-     
+    /**
+    * @author Dani,
+    */
 
+    public boolean checkin() throws InterruptedException{
 
+        JSONObject jsonLogin = new JSONObject();
+        
+        try {
+            jsonLogin.put("command", "checkin");
+            
+        } catch (JSONException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      
+        setDestinatario("Bellatrix");
+        outbox.setConversationId(this.conversationID);
+        outbox.setContent(jsonLogin.toString());
+        outbox.setPerformative(ACLMessage.REQUEST);  
+        this.send(outbox);     
 
+          try {
+              inbox = this.receiveACLMessage();
+              
+              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println("  Failure: " + inbox.getContent());    
+                  this.reply_withID = inbox.getReplyWith();
+
+              }        
+
+              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                  this.reply_withID = inbox.getReplyWith();
+                  System.out.println(" - INFORM: " + inbox.getContent());   
+                  System.out.println(" - reply-id: " + inbox.getReplyWith());        
+
+              } 
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+
+        return !"".equals("");
+        
+    };
+
+    /**
+    * @author Dani
+    */
+
+    public boolean refuel() throws InterruptedException{
+
+        JSONObject jsonLogin = new JSONObject();
+        
+        try {
+            jsonLogin.put("command", "refuel");
+            
+        } catch (JSONException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      
+        setDestinatario("Bellatrix");
+        outbox.setConversationId(conversationID);
+        outbox.setInReplyTo(reply_withID);
+        outbox.setContent(jsonLogin.toString());
+        outbox.setPerformative(ACLMessage.REQUEST);  
+        this.send(outbox);     
+
+          try {
+              inbox = this.receiveACLMessage();
+              
+              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println(" - Failure: " + inbox.getContent());  
+                  this.reply_withID = inbox.getReplyWith();
+
+              }
+              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                  System.out.println(" - INFORM: " + inbox.getContent());     
+                  this.reply_withID = inbox.getReplyWith();
+              } 
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        return !"".equals("");
+        
+    };
+
+    
+    
+    /**
+    * @author Dani,
+    */
+
+    public boolean performMove(String movimiento) throws InterruptedException{
+ 
+        JSONObject jsonLogin = new JSONObject();
+        
+        try {
+            jsonLogin.put("command", movimiento);
+            
+        } catch (JSONException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      
+        setDestinatario("Bellatrix");
+        outbox.setConversationId(conversationID);
+        outbox.setInReplyTo(reply_withID);
+        outbox.setContent(jsonLogin.toString());
+        outbox.setPerformative(ACLMessage.REQUEST);  
+        this.send(outbox);     
+
+          try {
+              inbox = this.receiveACLMessage();
+              
+              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println("Failure: " + inbox.getContent()); 
+                  this.reply_withID = inbox.getReplyWith();
+
+              }
+              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                  System.out.println("INFORM: " + inbox.getContent());   
+                  this.reply_withID = inbox.getReplyWith();
+
+              } 
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        
+        return !"".equals("");
+        
+    };
+
+      /**
+    * @author Dani,
+    */
+
+    public boolean doQuery_ref() throws InterruptedException{
+
+        setDestinatario("Bellatrix");
+        outbox.setConversationId(conversationID);
+        outbox.setInReplyTo(reply_withID);
+        outbox.setContent("");
+        outbox.setPerformative(ACLMessage.QUERY_REF);  
+        this.send(outbox);     
+
+          try {
+              inbox = this.receiveACLMessage();
+              
+              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println("Failure: " + inbox.getContent());
+                  this.reply_withID = inbox.getReplyWith();
+
+              }
+              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                  System.out.println("INFORM: " + inbox.getContent()); 
+                  this.reply_withID = inbox.getReplyWith();
+
+              } 
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        
+        return !"".equals("");
+        
+    };
+    
 }
