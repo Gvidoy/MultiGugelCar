@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class Helloworld {
     
-    public static final String NOMBRE_AGENTE = "agentep35";
+    public static final String NOMBRE_AGENTE = "agentep3";
     public static final String MAPA = "map1";
     /**
      * @param args the command line arguments
