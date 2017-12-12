@@ -39,7 +39,7 @@ public class Agente extends SingleAgent {
     private static int battery;
     private static int x;
     private static int y;
-    private static int[][] sensor;
+    private static ArrayList<ArrayList<Integer>> sensor;
     private static ArrayList<ArrayList<Integer>> mapa;  
     private static Boolean enObjetivo; 
     private static TipoVehiculo tipoVehiculo;
@@ -158,7 +158,7 @@ public class Agente extends SingleAgent {
     * Funcion para buscar el objetivo. Puede ser un coche, un camion o un dron. Cada uno lo buscará de una manera diferente.
     *
     */
-
+/*
     private void buscarObjetivo(){
 
 	boolean encontrado = false;
@@ -293,12 +293,15 @@ public class Agente extends SingleAgent {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    */
 
     /**
     * @author Ruben 
     * Funcion que busca una nueva direccion donde dirigirnos en caso de que no veamos el objetivo y no podamos seguir avanzando en la direccion anterior
     *
     */
+    
+    /*
     private void buscarNuevaDireccion(String next_move){
 	// AHORA DEPENDIENDO DE SI EL VEHICULO ES UN DRON O NO, TENDREMOS EN CUENTA LOS OBSTACULOS O NO
 	// Como hemos supuesto que es un coche, tendremos en cuenta los obstaculos
@@ -472,42 +475,7 @@ public class Agente extends SingleAgent {
 	}
     }
     
-    /**
-    * @author Ruben 
-    * Funcion para parsear el sensor recibido mediante doQueryRef. NO FUNCIONA
-    *
     */
-    private void parsearSensor() {
-        String fuente = this.inbox.getContent();
-        
-        // Parseamos el String original y lo almacenamos en un objeto
-        JsonObject objeto = Json.parse(fuente).asObject();
-        
-        // Extraemos los valores asociados a la clave "result"."sensor"
-        //System.out.println("Datos recibidos del sensor:");
-        
-        /*for(JsonValue j : objeto.get("result").asObject().get("sensor").asArray()){
-            System.out.println(j.asInt() + ", ");
-        }*/
-        
-        JsonArray vector = objeto.get("result").asObject().get("sensor").asArray();
-        
-        int aux = 0;
-        
-        for(int i=0; i < 5; i++){
-            for(int j=0; j < 5; j++){
-                Agente.sensor[i][j] = vector.get(aux).asInt();
-                
-                aux++;
-            }
-        }
-        
-        System.out.println("Datos guardados en nuestro sensor propio:");
-        
-        for(int i=0; i < 5; i++){
-            System.out.println(Agente.sensor[i][0] + ", " + Agente.sensor[i][1] + ", " + Agente.sensor[i][2] + ", " + Agente.sensor[i][3] + ", " + Agente.sensor[i][4] + ", ");
-        }
-    }
     
     /**
     * @author Dani
@@ -620,13 +588,6 @@ public class Agente extends SingleAgent {
                   System.out.println(" - INFORM: " + inbox.getContent());
                   System.out.println(" - reply-id: " + inbox.getReplyWith());
                   
-                  //String fuente = inbox.getContent();
-                  
-                  //JsonObject objeto = Json.parse(fuente).asObject();
-                  
-                  //int fuel = objeto.get("capabilities").asObject().get("fuelrate").asInt();
-                  //inicializarTipoVehiculo(fuel);
-
                   JSONObject json = new JSONObject(inbox.getContent());
                   if(json.has("capabilities")){
                      JSONObject json2 = new JSONObject(json.get("capabilities").toString());
@@ -762,7 +723,11 @@ public class Agente extends SingleAgent {
                   battery = Integer.parseInt(json2.get("battery").toString());
                   x = Integer.parseInt(json2.get("x").toString());
                   y = Integer.parseInt(json2.get("y").toString());
-                  //leerSensor((ArrayList<Integer>) json2.get("sensor"));
+                  
+                  JsonObject objetoSensor = Json.parse(inbox.getContent()).asObject();
+                  objetoSensor = objetoSensor.get("result").asObject();
+                  JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
+                  leerSensor(vectorSensor);
               } 
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -775,32 +740,29 @@ public class Agente extends SingleAgent {
     /**
     * @author nacho
     */
-    private void leerSensor(ArrayList<Integer> respuesta){
-        
-        int aux = 0;
-        
- 
-        for(int i=0; i < range; i++){
-            for(int j=0; j < range; j++){
-                sensor[i][j]= respuesta.get(aux);
-                aux++;
-                
-            }
-        }
+    private void leerSensor(JsonArray respuesta) throws JSONException{
         
         // Mostramos los datos proporcionados por los sensores
         System.out.println("Los datos recibidos son: ");
         System.out.println("\n Radar: ");
         
+        sensor = new ArrayList<ArrayList<Integer>>();
+       
+        int contador = 0;
         String print = "";
-        System.out.println("Lectura del radar");
-        for(int i=0; i < range; i++){
-            for(int j=0; j < range; j++){
-                print+= this.sensor[i][j] + " ";
+        for(int i = 0; i<range; i++){
+            sensor.add(new ArrayList<Integer>());
+            for(int j = 0; j<range; j++){
+                JsonValue  value = respuesta.get(contador);
+                int a = value.asInt();
+                sensor.get(i).add(a);
+                print+= sensor.get(i).get(j) + " ";
+                contador++;
             }
-             System.out.println(print);
-        }
-               
+            System.out.println(print);
+            print = "";
+          }
+              
     }
     
     /**
@@ -808,16 +770,16 @@ public class Agente extends SingleAgent {
     */
     private void inicializarTipoVehiculo(int fuel){
         switch(fuel){
-            case 1:
+            case 2:
                 tipoVehiculo = TipoVehiculo.DRON;
-                fuelRate = 1;
+                fuelRate = 2;
                 fly = true;
                 range = 3;
                 break;
             
-            case 2: 
+            case 1: 
                 tipoVehiculo = TipoVehiculo.COCHE;
-                fuelRate = 2;
+                fuelRate = 1;
                 fly = false;
                 range = 5;
                 break;
@@ -830,6 +792,8 @@ public class Agente extends SingleAgent {
                 break;
                 
         }
+        
+        
                 
     }
 
