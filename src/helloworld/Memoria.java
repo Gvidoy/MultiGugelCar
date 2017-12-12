@@ -226,7 +226,7 @@ public class Memoria {
 
     /*
     * @author grego
-    * Cbtiene el tipo del agente
+    * obtiene el tipo del agente
     * @param {numero de agente Agente}
     * @return {tipo de agente}
     */
