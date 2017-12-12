@@ -226,7 +226,7 @@ public class Memoria {
 
     /*
     * @author grego
-    * Cbtiene el tipo del agente
+    * obtiene el tipo del agente
     * @param {numero de agente Agente}
     * @return {tipo de agente}
     */
@@ -234,7 +234,86 @@ public class Memoria {
         return miEquipo.get(agente);
     }
     
+    /*
+    * @author grego
+    * actualiza el mapa
+    * @param {movimiento a realizar} 
+    * @param {numero de agente Agente}
+    * @param {percepcion del agente} 
+    */
+    
     public void actuMapa(String movementCommand, int agente, ArrayList<ArrayList<Integer>> radar){
+        
+        int MenX = (Integer)posicionesAgentes.get(agente).getKey();
+        int MenY = (Integer)posicionesAgentes.get(agente).getValue();
+        
+        //Ajusto mi posicion en funcion del movimiento
+        if (movementCommand.equals("moveW") ){
+            MenX--;
+            System.out.println("Voy al Oeste");
+
+        }else if (movementCommand.equals("moveE")){
+            MenX++;
+            System.out.println("Voy al Este");    
+
+        }else if (movementCommand.equals("moveN")){
+            MenY--;
+            System.out.println("Voy al Norte");    
+
+        }else if (movementCommand.equals("moveS")){
+            MenY++;
+            System.out.println("Voy al Sur");    
+        
+        }else if (movementCommand.equals("moveNW")){
+            MenX--;
+            MenY--;
+            System.out.println("Voy al NorOeste");    
+        
+        }else if (movementCommand.equals("moveNE")){
+            MenX++;
+            MenY--;
+            System.out.println("Voy al NorEste");    
+        
+        }else if (movementCommand.equals("moveSW")){
+            MenX--;
+            MenY++;
+            System.out.println("Voy al NorOeste");    
+        
+        }else if (movementCommand.equals("moveSE")){
+            MenX++;
+            MenY++;
+            System.out.println("Voy al NorOeste");    
+        } 
+        
+        //Grabamos en memoria la posición reajustada del cliente
+        Pair posicionAgente = new Pair(MenX,MenY);
+        this.posicionesAgentes.set(agente, posicionAgente);
+        
+        
+        //Contadores para la matriz del radar
+        int conRadarI = 0;
+        int conRadarJ = 0;
+        
+        int tope = radar.size();
+        int ini = tope/2;
+        
+        //Agrego la nueva informacion a la memoria
+        for(int i = MenY - ini ; i < MenY + tope; i++){
+            for (int j = MenX - ini ; j < MenX + tope; j++){
+                mapa.get(i).set(j,radar.get(conRadarI).get(conRadarJ));
+                conRadarJ++;     
+            }
+            System.out.println();
+            conRadarI++;
+            conRadarJ = 0;     
+        }
+        
+        //El id del agente en el mapa es el agente +10
+        int idAgente = agente+10;
+        
+        mapa.get(MenX).set(MenY,idAgente);
+        
+        
     
     }
     
@@ -245,7 +324,7 @@ public class Memoria {
     * @param a {Ancho ncasillar} 
     * @param l {Alto ncasillas}
     */
-    public void verMapa(int a, int l){
+    public void verMapaCentro(int a, int l){
      
      
         //Delimito el centro
@@ -261,6 +340,61 @@ public class Memoria {
             System.out.println();
         }
 
+    }
+    
+        /**
+    * @author grego
+    *
+    *Visisualiza el mapa desde el centro de la memoria
+    * @param a {Ancho ncasillar} 
+    * @param l {Alto ncasillas}
+    */
+    public void verMapa(int x, int y,int a, int l){
+     
+     
+        //Delimito el centro
+        int L = l/2 + y;
+        int A = a/2 + x;   
+        
+       
+        //Muestro los datos del centro pasado por parametro
+        for(int i = y - l/2 ; i < L; i++){
+            for (int j = x - a/2; j < A; j++){
+                System.out.print(mapa.get(i).get(j));
+            }
+            System.out.println();
+        }
+
+    }
+    
+    /**
+    * @author grego
+    *
+    *Obtiene un mapa parcial de memoria
+    * @param a {Ancho ncasillar} 
+    * @param l {Alto ncasillas}
+    * @param x {posicion en x desde conde obtener} 
+    * @param y {posicion en y desde conde obtener} 
+    * @return {tArrayList<ArrayList<Integer>>} mapa parcial
+    */
+    public ArrayList<ArrayList<Integer>> obtenerMapaParcial(int x, int y,int a, int l){
+     
+     
+        //Delimito el centro
+        int L = l/2 + y;
+        int A = a/2 + x;
+        ArrayList<ArrayList<Integer>> recorte;
+       
+        recorte = new ArrayList<ArrayList<Integer>>();
+       
+        //Cojo los datos del centro de la memoria
+        for(int i = y - l/2 ; i < L; i++){
+            recorte.add(new ArrayList<Integer>());
+            for (int j = x - a/2; j < A; j++){
+                recorte.get(i).add(mapa.get(i).get(j));
+            }
+        }
+        return recorte;
     }
     
 }
