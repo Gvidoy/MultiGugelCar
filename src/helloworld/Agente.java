@@ -84,6 +84,7 @@ public class Agente extends SingleAgent {
     public void execute(){
 
         try {
+            System.out.println("prueba");
             subscribe();
             checkin();
             
