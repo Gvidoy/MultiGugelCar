@@ -30,6 +30,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
+    private static String nombreLider = "Lidllll";
     private ACLMessage outbox;
     private ACLMessage inbox;
     private String conversationID;
@@ -65,6 +66,7 @@ public class Agente extends SingleAgent {
         
         this.outbox = null;
         this.inbox  = null;
+        
         this.conversationID = "";
         this.reply_withID = "";
         System.out.println("\n\n\nHola Mundo soy un agente llamado " + this.getName());
@@ -82,22 +84,27 @@ public class Agente extends SingleAgent {
     //public void init();
     @Override
     public void execute(){
-
+   
         try {
+       
+           System.out.println("voy a ver si hay clave " + " - " + this.getName());
+        if(!askForConversationID()){
+            System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
             subscribe();
+         }
+           System.out.println("voy a hacer el checking " + " - " + this.getName());
             checkin();
             
-            /*while(!Agente.tipoVehiculo.equals(TipoVehiculo.COCHE)){
-                checkin();
-            }*/
-            
-            refuel();
-            doQuery_ref();
-            //performMove("moveS");
+           
+          //  refuel();
+        
+          ACLMessage datos = doQuery_ref();
+          enviar_datos_inicales(datos);
+           // performMove("moveS");
 
-            cancel();
-        } catch (InterruptedException | JSONException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        //    cancel();
+       } catch (InterruptedException | JSONException ex) {
+           Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
        
 }
@@ -541,12 +548,14 @@ public class Agente extends SingleAgent {
               inbox = this.receiveACLMessage();
               
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inbox.getContent());        
+                  System.out.println("Failure: " + inbox.getContent() + " - " + this.getName());        
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
                   this.conversationID = inbox.getConversationId();
-                  System.out.println("Aceptada " + this.conversationID);
-              } 
+                  System.out.println("Aceptada " + this.conversationID + " - " + this.getName());
+                  enviar_clave_lider();
+                
+              }
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
@@ -606,12 +615,12 @@ public class Agente extends SingleAgent {
         outbox.setContent(jsonLogin.toString());
         outbox.setPerformative(ACLMessage.REQUEST);  
         this.send(outbox);     
-
+        System.out.println("aqui llego");
           try {
               inbox = this.receiveACLMessage();
               
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("  Failure: " + inbox.getContent());    
+                  System.out.println("Failure: " + inbox.getContent());    
                   this.reply_withID = inbox.getReplyWith();
 
               }        
@@ -619,13 +628,7 @@ public class Agente extends SingleAgent {
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
                   System.out.println(" - INFORM: " + inbox.getContent());
                   System.out.println(" - reply-id: " + inbox.getReplyWith());
-                  
-                  //String fuente = inbox.getContent();
-                  
-                  //JsonObject objeto = Json.parse(fuente).asObject();
-                  
-                  //int fuel = objeto.get("capabilities").asObject().get("fuelrate").asInt();
-                  //inicializarTipoVehiculo(fuel);
+                  this.reply_withID = inbox.getReplyWith();
 
                   JSONObject json = new JSONObject(inbox.getContent());
                   if(json.has("capabilities")){
@@ -640,6 +643,7 @@ public class Agente extends SingleAgent {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
 
+         System.out.println("Soy un:" + this.tipoVehiculo + " Y soy el agente: " + this.getName());
         return !"".equals("");
         
     };
@@ -660,7 +664,7 @@ public class Agente extends SingleAgent {
         }
       
         setDestinatario("Bellatrix");
-        outbox.setConversationId(conversationID);
+        outbox.setConversationId(this.conversationID);
         outbox.setInReplyTo(reply_withID);
         outbox.setContent(jsonLogin.toString());
         outbox.setPerformative(ACLMessage.REQUEST);  
@@ -736,7 +740,7 @@ public class Agente extends SingleAgent {
     * @author Dani, nacho
     */
 
-    public boolean doQuery_ref() throws InterruptedException, JSONException{
+    public ACLMessage doQuery_ref() throws InterruptedException, JSONException{
 
         setDestinatario("Bellatrix");
         outbox.setConversationId(conversationID);
@@ -768,7 +772,7 @@ public class Agente extends SingleAgent {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
         
-        return !"".equals("");
+        return inbox;
         
     };
     
@@ -832,7 +836,51 @@ public class Agente extends SingleAgent {
         }
                 
     }
+    
+      public boolean askForConversationID() throws InterruptedException{
+ 
+   
 
+        setDestinatario(this.nombreLider);
+        outbox.setPerformative(ACLMessage.REQUEST);  
+        this.send(outbox);     
+
+          try {
+              inbox = this.receiveACLMessage();
+              
+              if (inbox.getPerformativeInt() == ACLMessage.FAILURE ){
+                  System.out.println("No hay ID todavia.");
+                  return false;
+              }
+              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                    this.conversationID = inbox.getConversationId();
+                    System.out.println("Aceptada " + this.conversationID);
+              } 
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+        
+        return true;
+        
+    };
+
+    private void enviar_clave_lider() {
+        setDestinatario(this.nombreLider);
+        outbox.setPerformative(ACLMessage.INFORM);  
+        outbox.setContent(this.conversationID);
+        this.send(outbox);     
+
+       
+    }
+    
+
+    
+    private void enviar_datos_inicales(ACLMessage datos) {
+        
+   
+       
+    }
+    
     
     
     

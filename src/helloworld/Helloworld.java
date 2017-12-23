@@ -24,14 +24,21 @@ public class Helloworld {
      */
     public static void main(String[] args) {
         
-        Agente a;
+        Agente a,b,c;
+        Lider lidl;
      //   AgentsConnection.connect("localhost",5672,"test","guest","guest",false);  
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
         try {
+            lidl = new Lider(new AgentID("Lidllll"));
+            lidl.start();
+            
+            a = new Agente(new AgentID("agentep3"));
+            a.start();
+            Thread.sleep(4000);
+            
+           b = new Agente(new AgentID("agentep16"));
+           b.start();
 
-            a = new Agente(new AgentID("agentep21"));
-            a .start();
-     
         } catch (Exception ex) {
             System.out.println("Error al crear el agente ");
         }
