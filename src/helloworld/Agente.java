@@ -32,10 +32,11 @@ public class Agente extends SingleAgent {
  
     private static String nombreLider = "Lidllll";
     private ACLMessage outbox;
-    private ACLMessage inbox;
     private String conversationID;
     private String reply_withID;
     
+    //mensajes
+    private MessageQueue queue;
 
     private static int battery;
     private static int x;
@@ -58,6 +59,7 @@ public class Agente extends SingleAgent {
 
     public Agente() throws Exception {
         super(null);
+      
     }
 
     
@@ -65,11 +67,13 @@ public class Agente extends SingleAgent {
         super(aid);
         
         this.outbox = null;
-        this.inbox  = null;
+
+        queue = new MessageQueue(20);
+        
         
         this.conversationID = "";
         this.reply_withID = "";
-        System.out.println("\n\n\nHola Mundo soy un agente llamado " + this.getName());
+        System.out.println("\nHola Mundo soy un agente llamado " + this.getName());
 
         battery = 100;
         mapa = new ArrayList();
@@ -89,14 +93,16 @@ public class Agente extends SingleAgent {
        
            System.out.println("voy a ver si hay clave " + " - " + this.getName());
         if(!askForConversationID()){
+            Thread.sleep(4000);
             System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
             subscribe();
          }
            System.out.println("voy a hacer el checking " + " - " + this.getName());
+
             checkin();
             
            
-          //  refuel();
+      //  refuel();
         
           ACLMessage datos = doQuery_ref();
           enviar_datos_inicales(datos);
@@ -485,7 +491,10 @@ public class Agente extends SingleAgent {
     *
     */
     private void parsearSensor() {
-        String fuente = this.inbox.getContent();
+        ACLMessage inbox = new ACLMessage();
+        
+        //HE cambiado esto.
+        String fuente = inbox.getContent();
         
         // Parseamos el String original y lo almacenamos en un objeto
         JsonObject objeto = Json.parse(fuente).asObject();
@@ -543,15 +552,22 @@ public class Agente extends SingleAgent {
         outbox.setContent(jsonLogin.toString());
         outbox.setPerformative(ACLMessage.SUBSCRIBE);  
         this.send(outbox);     
+        System.out.println("\n["+this.getName()+"] Mensaje: "+ outbox.getPerformative() + " enviado");
 
           try {
-              inbox = this.receiveACLMessage();
               
-              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inbox.getContent() + " - " + this.getName());        
+                while (queue.isEmpty()){
+                   Thread.sleep(1);
+                };
+                 ACLMessage inb = queue.Pop();
+                System.out.println("\n["+this.getName()+"] Mensaje : "+ inb.getPerformative() + " Recibido");
+
+              
+              if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println("Failure: " + inb.getContent() + " - " + this.getName());        
               }
-              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  this.conversationID = inbox.getConversationId();
+              if (inb.getPerformativeInt() == ACLMessage.INFORM){
+                  this.conversationID = inb.getConversationId();
                   System.out.println("Aceptada " + this.conversationID + " - " + this.getName());
                   enviar_clave_lider();
                 
@@ -563,36 +579,6 @@ public class Agente extends SingleAgent {
         return !"".equals("");
         
     };
-    
-    /**
-    * @author Dani,Oleksandr
-    */
-    public boolean cancel(){
-                
-        System.out.println("\n Enviando peticion de cancelacion");
-        setDestinatario("Bellatrix");
-        outbox.setPerformative(ACLMessage.CANCEL);
-        this.send(outbox);    
-        
-           try {
-              inbox = this.receiveACLMessage();
-
-              if (inbox.getPerformativeInt() == ACLMessage.AGREE){
-                  System.out.println("AGREE " + inbox.getContent());
-              } 
-              inbox = this.receiveACLMessage();
-               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println("INFORM " + inbox.getContent());
-              } 
-
-          } catch (InterruptedException ex) {
-              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-          }
-        
-
-        return true;  
-    };
-    
 
  
     /**
@@ -617,20 +603,27 @@ public class Agente extends SingleAgent {
         this.send(outbox);     
         System.out.println("aqui llego");
           try {
-              inbox = this.receiveACLMessage();
               
-              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inbox.getContent());    
-                  this.reply_withID = inbox.getReplyWith();
+                while (queue.isEmpty()){Thread.sleep(1);}; 
+                ACLMessage inb = queue.Pop();
+                System.out.println("MENSAJER COMPLETO: " +
+                   "Conversation ID: " + inb.getConversationId()
+                   + " SENDER: " + inb.getSender().name
+                   + " REPLY WITH: " + inb.getReplyWith()
+                   + "Performativa: " + inb.getPerformative()
+                         
+                );
+                
+              if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                  System.out.println("Failure: " + inb.getContent());    
+                  this.reply_withID = inb.getReplyWith();
 
-              }        
+              }else if (inb.getPerformativeInt() == ACLMessage.INFORM){
+                  System.out.println(" - INFORM: " + inb.getContent());
+                  System.out.println(" - reply-id: " + inb.getReplyWith());
+                  this.reply_withID = inb.getReplyWith();
 
-              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println(" - INFORM: " + inbox.getContent());
-                  System.out.println(" - reply-id: " + inbox.getReplyWith());
-                  this.reply_withID = inbox.getReplyWith();
-
-                  JSONObject json = new JSONObject(inbox.getContent());
+                  JSONObject json = new JSONObject(inb.getContent());
                   if(json.has("capabilities")){
                      JSONObject json2 = new JSONObject(json.get("capabilities").toString());
                     int fuel= json2.getInt("fuelrate");
@@ -638,7 +631,9 @@ public class Agente extends SingleAgent {
                   }
                   
                   
-              } 
+              }else{
+                  System.out.println("No es de ningun tipo");
+              }
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
@@ -671,8 +666,9 @@ public class Agente extends SingleAgent {
         this.send(outbox);     
 
           try {
-              inbox = this.receiveACLMessage();
-              
+            while (queue.isEmpty()){Thread.sleep(1);};
+        
+           ACLMessage inbox = queue.Pop();              
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println(" - Failure: " + inbox.getContent());  
                   this.reply_withID = inbox.getReplyWith();
@@ -714,7 +710,9 @@ public class Agente extends SingleAgent {
         this.send(outbox);     
 
           try {
-              inbox = this.receiveACLMessage();
+              while (queue.isEmpty()){Thread.sleep(1);};
+        
+                ACLMessage inbox = queue.Pop();
               
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inbox.getContent()); 
@@ -748,9 +746,10 @@ public class Agente extends SingleAgent {
         outbox.setContent("");
         outbox.setPerformative(ACLMessage.QUERY_REF);  
         this.send(outbox);     
-
+        ACLMessage inbox = new ACLMessage();
           try {
-              inbox = this.receiveACLMessage();
+               while (queue.isEmpty()){ Thread.sleep(1);};   
+                inbox = queue.Pop();
               
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inbox.getContent());
@@ -843,27 +842,31 @@ public class Agente extends SingleAgent {
 
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.REQUEST);  
-        this.send(outbox);     
+        this.send(outbox);
 
-          try {
-              inbox = this.receiveACLMessage();
-              
-              if (inbox.getPerformativeInt() == ACLMessage.FAILURE ){
-                  System.out.println("No hay ID todavia.");
-                  return false;
-              }
-              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                    this.conversationID = inbox.getConversationId();
-                    System.out.println("Aceptada " + this.conversationID);
-              } 
-          } catch (InterruptedException ex) {
-              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-          }
+        while (queue.isEmpty()){
+           Thread.sleep(1);
+        };
+        
+        ACLMessage inb = queue.Pop();
+            if (inb.getPerformativeInt() == ACLMessage.FAILURE ){
+                System.out.println("No hay ID todavia.");
+                return false;
+            }
+            if (inb.getPerformativeInt() == ACLMessage.INFORM){
+                  this.conversationID = inb.getConversationId();
+                  System.out.println("Aceptada " + this.conversationID);
+            } 
+          
         
         return true;
         
     };
-
+    
+    /**
+    * @author Dani
+    */
+      
     private void enviar_clave_lider() {
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.INFORM);  
@@ -874,18 +877,32 @@ public class Agente extends SingleAgent {
     }
     
 
-    
+    /**
+    * @author Dani
+    */
     private void enviar_datos_inicales(ACLMessage datos) {
         
-   
+        System.out.println("Envio datos Iniciales");
+        setDestinatario(this.nombreLider);
+        outbox.setPerformative(ACLMessage.INFORM);  
+        outbox.setContent(datos.getContent());
+        outbox.setConversationId("DatosI");
+        this.send(outbox);     
+        System.out.println("He enviado los datos iniciales");
+
        
     }
     
-    
-    
-    
-    
-    
-    
+    /**
+    * @author Dani
+    */
+    public void onMessage(ACLMessage msg)  {
+        try {
+            queue.Push(msg);
+            System.out.println("\n["+this.getName()+"] Encolando: "+ msg.getPerformative() + " de " + msg.getSender().name );
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
     
 }

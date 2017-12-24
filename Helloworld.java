@@ -10,6 +10,9 @@ import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.log4j.chainsaw.Main;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.w3c.dom.DOMConfiguration;
 
 /**
  *
@@ -22,6 +25,8 @@ public class Helloworld {
      */
     public static void main(String[] args) {
         
+        DOMConfigurator.configure("configuration/loggin.xml");
+        Logger logger = Logger.getLogger(Helloworld.class.toString());
         Agente a;
      //   AgentsConnection.connect("localhost",5672,"test","guest","guest",false);  
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
