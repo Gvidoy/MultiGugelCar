@@ -178,11 +178,11 @@ public class Lider extends SingleAgent{
           
           String[] partes = mensaje.split(",");
         
-          Memoria.registrarAgente(partes, msg.getSender());
+          //Memoria.registrarAgente(partes, msg.getSender());
           
           System.out.println("Enviado a la memoria: " + mensaje);
     }
-        
+       
 
     
     
