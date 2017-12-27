@@ -105,6 +105,7 @@ public class Agente extends SingleAgent {
             Thread.sleep(4000);
             System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
             subscribe();
+        }
             
             checkin();
             
@@ -116,12 +117,11 @@ public class Agente extends SingleAgent {
             }
             
             System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
-            
-            cancel();
+
         } catch (InterruptedException | JSONException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
 
-         
+        }
        
 }
     
@@ -220,7 +220,7 @@ public class Agente extends SingleAgent {
             
             // FIN DE LA BUSQUEDA DEL OBJETIVO
 
-            /* INICIO DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
+             //INICIO DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
 
             // Dependiendo de donde se encuentre el objetivo nos moveremos en una direccion u otra
             if(this.coord_x_objetivo < Agente.x){
@@ -261,7 +261,7 @@ public class Agente extends SingleAgent {
                 else
                     next_move = "moveSE";
                     
-            } */
+            } 
         } // FIN DEL IF DE OBJETIVO ENCONTRADO
         else {
             
@@ -788,7 +788,7 @@ public class Agente extends SingleAgent {
         return direccion;
     }
     
-    */
+    /*
     private void parsearSensor() {
         ACLMessage inbox = new ACLMessage();
         
@@ -803,7 +803,7 @@ public class Agente extends SingleAgent {
         
         /*for(JsonValue j : objeto.get("result").asObject().get("sensor").asArray()){
             System.out.println(j.asInt() + ", ");
-        }*/
+        }* /
         
         JsonArray vector = objeto.get("result").asObject().get("sensor").asArray();
         
@@ -823,7 +823,7 @@ public class Agente extends SingleAgent {
             System.out.println(Agente.sensor[i][0] + ", " + Agente.sensor[i][1] + ", " + Agente.sensor[i][2] + ", " + Agente.sensor[i][3] + ", " + Agente.sensor[i][4] + ", ");
         }
     }
-    
+    */
     /**
     * @author Dani
     */
@@ -837,12 +837,13 @@ public class Agente extends SingleAgent {
      * @author Ruben
      * 
      * Funcion para obtener el id de la conversacion y el reply with de un mensaje de respuesta de la plataforma
-     */
+     * /
     private void obtenerDatos(){
         this.conversationID = this.inbox.getConversationId();
         this.reply_withID = this.inbox.getReplyWith();
     }
     
+    * */
     /**
     * @author Dani, Oleksandr 
     */
@@ -927,21 +928,14 @@ public class Agente extends SingleAgent {
               if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inb.getContent());    
                   this.reply_withID = inb.getReplyWith();
-                cancel();
+                    cancel();
 
               }else if (inb.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println(" - INFORM: " + inb.getContent());
-                  System.out.println(" - reply-id: " + inb.getReplyWith());
-                  this.reply_withID = inb.getReplyWith();
 
-              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println(" - INFORM: " + inbox.getContent());
-                  System.out.println(" - reply-id: " + inbox.getReplyWith());
+                  this.conversationID = inb.getConversationId();
+                  this.reply_withID = inb.getReplyWith();
                   
-                  this.conversationID = inbox.getConversationId();
-                  this.reply_withID = inbox.getReplyWith();
-                  
-                  JSONObject json = new JSONObject(inbox.getContent());
+                  JSONObject json = new JSONObject(inb.getContent());
 
                   if(json.has("capabilities")){
                      JSONObject json2 = new JSONObject(json.get("capabilities").toString());
@@ -1230,6 +1224,10 @@ public class Agente extends SingleAgent {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public void cancel(){
+    
     }
     
 }
