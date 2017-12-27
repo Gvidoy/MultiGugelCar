@@ -10,6 +10,9 @@ import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.log4j.varia.NullAppender;
+import org.apache.log4j.xml.DOMConfigurator;
+
 
 /**
  *
@@ -23,11 +26,15 @@ public class Helloworld {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
-        Agente a;
-     //   AgentsConnection.connect("localhost",5672,"test","guest","guest",false);  
+
+       org.apache.log4j.BasicConfigurator.configure(new NullAppender());
+       Agente a,b,c,d; 
+       Lider lidl;
+       
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
         try {
+            lidl = new Lider(new AgentID("Lidllll"));
+            lidl.start();
 
             a = new Agente(new AgentID(NOMBRE_AGENTE));
             a .start();
