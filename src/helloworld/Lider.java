@@ -63,7 +63,7 @@ public class Lider extends SingleAgent{
                 cont++;
                  System.out.println("["+this.getName()+"] Iddle " + cont);
                  try {
-                     Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
+                     Thread.sleep(500); // Espera 1 segundo hasta siguiente chequeo
                  } catch (InterruptedException ex) {
                      ex.printStackTrace();
                  }
@@ -87,12 +87,15 @@ public class Lider extends SingleAgent{
                      case "solicitarMovimiento":
                          if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
                              comprobarMovimiento(inbox);
-                         }  
+                         }
+                         break;
+                     case "sendKey":
+                            sendConversationID(inbox);
+                           break;
+                         
                  }
                  
-                if(inbox.getPerformativeInt() == ACLMessage.REQUEST || inbox.getPerformativeInt() == ACLMessage.INFORM){
-                    sendConversationID(inbox);
-                }
+              
 
              } catch (InterruptedException ex) {
                  ex.printStackTrace();
@@ -101,7 +104,7 @@ public class Lider extends SingleAgent{
          }
     }
         public void sendConversationID(ACLMessage msg) throws InterruptedException{
-        //  ACLMessage inbox = new ACLMessage();
+
           System.out.println("Mensaje recivido " + msg.getPerformative());
           ACLMessage outbox;
 
@@ -186,26 +189,59 @@ public class Lider extends SingleAgent{
      * @param msg 
      */
     private void recibirDatosIniciales(ACLMessage msg) {
-        System.out.println("Mensaje recividoloo " + msg.getPerformative() + " ID " + msg.getConversationId()); 
+       
+        System.out.println("Mensaje recividoloo de " + msg.getSender().getLocalName() + " " + msg.getPerformative() + " ID " + msg.getConversationId()); 
 
           String mensaje = msg.getContent();
-      
-       String[] partes = mensaje.split(",");
-        
-          //Memoria.registrarAgente(partes, msg.getSender());
           
-          System.out.println("Enviado a la memoria: " + mensaje);
+          String[] partes = mensaje.split(",");
+          int xv =  Integer.parseInt(partes[0]);
+          int yv =  Integer.parseInt(partes[1]);
+  
+          TipoVehiculo tipo = TipoVehiculo.COCHE;
+          switch(partes[2]){
+              case "DRON":
+                  tipo = TipoVehiculo.DRON;
+              break;
+              case "CAMION":
+                  tipo = TipoVehiculo.CAMION;
+              break;
+          }
+          memoria.addVehiculo(xv,yv,msg.getSender().getLocalName(),tipo);
+  
+      
     }
 
     private boolean comprobarMovimiento(ACLMessage inb) {
-        
+        String agent = inb.getSender().name;
         switch(inb.getContent()){
             case "moveS":
-             
-                break;
+             if(memoria.getS(agent) == 0 || memoria.getS(agent) == 12){return true;};
+            break;
+            case "moveN":
+             if(memoria.getN(agent) == 0 || memoria.getN(agent) == 12){return true;};
+            break;
+            case "moveSW":
+             if(memoria.getSW(agent) == 0 || memoria.getSW(agent) == 12){return true;};
+            break;
+            case "moveSE":
+             if(memoria.getSE(agent) == 0 || memoria.getSE(agent) == 12){return true;};
+            break;
+            case "moveNE":
+             if(memoria.getNE(agent) == 0 || memoria.getNE(agent) == 12){return true;};
+            break;
+            case "moveNW":
+             if(memoria.getNW(agent) == 0 || memoria.getNW(agent) == 12){return true;};
+            break;
+            case "moveW":
+             if(memoria.getW(agent) == 0 || memoria.getW(agent) == 12){return true;};
+            break;
+            case "moveE":
+             if(memoria.getE(agent) == 0 || memoria.getE(agent) == 12){return true;};
+            break;
         }
         
-        
+        if(memoria.getTipo(agent) == TipoVehiculo.DRON){ return true;};
         return false;
     }
         
