@@ -167,14 +167,20 @@ public class Lider extends SingleAgent{
             ex.printStackTrace();
         }
     }
-
+    /**
+     * @author Nacho
+     * @param msg 
+     */
     private void recibirDatosIniciales(ACLMessage msg) {
         System.out.println("Mensaje recividoloo " + msg.getPerformative() + " ID " + msg.getConversationId()); 
-        System.out.println(msg.getContent());
-         // Falta hacer el paso de datos a memoria
-        // this. = msg.getContent();
 
+          String mensaje = msg.getContent();
           
+          String[] partes = mensaje.split(",");
+        
+          Memoria.registrarAgente(partes);
+          
+          System.out.println("Enviado a la memoria: " + mensaje);
     }
         
 

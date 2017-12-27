@@ -110,6 +110,9 @@ public class Agente extends SingleAgent {
             checkin();
             
             doQuery_ref();
+            
+            enviar_datos_inicales();
+            
 
             while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
@@ -316,6 +319,8 @@ public class Agente extends SingleAgent {
         outbox.setContent(move);
         outbox.setPerformative(ACLMessage.QUERY_IF);  
         this.send(outbox);   
+        
+        
         Boolean moverse = false;
         ACLMessage inbox = new ACLMessage();
           try {
@@ -1242,17 +1247,15 @@ public class Agente extends SingleAgent {
     /**
     * @author Dani
     */
-    private void enviar_datos_inicales(ACLMessage datos) {
+    private void enviar_datos_inicales() {
         
         System.out.println("Envio datos Iniciales");
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.INFORM);  
-        outbox.setContent(datos.getContent());
+        outbox.setContent(this.x + "," + this.y + "," + this.tipoVehiculo);
         outbox.setConversationId("DatosI");
         this.send(outbox);     
         System.out.println("He enviado los datos iniciales");
-
-       
     }
     
     /**
