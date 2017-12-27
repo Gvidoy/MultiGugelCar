@@ -16,13 +16,14 @@ public class Memoria {
     
     //Variables para la memoria
     private ArrayList<ArrayList<Integer>> mapa;
-
+/*
     //Rastro del primer vehiculo que busca el objetivo
     private ArrayList<Pair> posicionesAgentes;
     //private ArrayList<Pair> rastro;
  
     private ArrayList<TipoVehiculo> miEquipo;
-    
+   */ 
+    private ArrayList<Vehiculo> equipo;
     int ObjetivoX = -1;
     int ObjetivoY = -1;
     
@@ -33,21 +34,11 @@ public class Memoria {
     
     Memoria(){
         this.inicializarMemoria();
+        //Obligatorio llamar uan vez por agente
+        //addIniPosAgente(int x,int y)
+        //addIniAgenteEquipo(TipoVehiculo tipo)
     }
-    /**
-    * @author Grego
-    * Este constructor recibe todos los parametros para poder inicializar toda la memoria
-    * 
-    * @param xn {Pos x agente n} 
-    * @param yn {Pos y agente n}
-    * @param tipon {tipo agente n}
-    */
-    
-    Memoria(int x1,int y1,TipoVehiculo tipo1,int x2,int y2,TipoVehiculo tipo2,int x3,int y3,TipoVehiculo tipo3,int x4,int y4,TipoVehiculo tipo4 ){
-        this.inicializarMemoria();
-        inicializrPosAgentes(x1,y1,x2,y2,x3,y3,x4,y4);
-        inicializarMiEquipo(tipo1, tipo2, tipo3, tipo4);
-    }
+
     
     /**
     * @author grego
@@ -58,7 +49,8 @@ public class Memoria {
     private void inicializarMemoria(){
             
     this.mapa = new ArrayList<ArrayList<Integer>>();
-    
+    this.equipo = new ArrayList<Vehiculo>();
+    ;
     
     for(int i = 0; i < 1000; i++){
         this.mapa.add(new ArrayList<Integer>());
@@ -69,38 +61,54 @@ public class Memoria {
     System.out.println("Tengo memoria");
     }
   
+    public void addVehiculo(int x, int y, String Nombre,TipoVehiculo tipo){
+        Vehiculo nuevoVehiculo = new Vehiculo(x,y,Nombre,tipo);
+        this.equipo.add(nuevoVehiculo);
+    }
+    
     /**
     * @author Grego
-    * Esta función inicializa las posiciones de los agentes
+    * Esta función Agrega la posicion inicial de un agente
     * 
     * @param xn {Pos x agente n} 
     * @param yn {Pos y agente n}
     */
 
-     public void inicializrPosAgentes(int x1,int y1,int x2,int y2,int x3,int y3,int x4,int y4){
-        Pair posicionAgente1 = new Pair(x1,y1);
-        Pair posicionAgente2 = new Pair(x2,y2);
-        Pair posicionAgente3 = new Pair(x3,y3);
-        Pair posicionAgente4 = new Pair(x4,y4);
+     //public void addIniPosAgente(int x,int y){
+       // Pair posicionAgente = new Pair(x,y);
+        //this.posicionesAgentes.add(posicionAgente);
 
-        this.posicionesAgentes.add(posicionAgente1);
-        this.posicionesAgentes.add(posicionAgente2);
-        this.posicionesAgentes.add(posicionAgente3);
-        this.posicionesAgentes.add(posicionAgente4);
 
-    }
+    //}
     /**
     * @author Grego
-    * Asigna los tipos de los que son cada agente
+    * Asigna el tipo de un agente
     * @param tipon {tipo agente n}
     */
-     public void inicializarMiEquipo(TipoVehiculo tipo1,TipoVehiculo tipo2, TipoVehiculo tipo3,TipoVehiculo tipo4){
-        this.miEquipo.add(tipo1);
-        this.miEquipo.add(tipo2);
-        this.miEquipo.add(tipo3);
-        this.miEquipo.add(tipo4);
-
- }
+     //public void addIniAgenteEquipo(TipoVehiculo tipo){
+       // this.miEquipo.add(tipo);
+ //}
+    /**
+    * @author Grego
+    * Busca la posicion de un vehiculo en el array para poder hacerle get/set
+    * @param Nombre {Nombre agente}
+    * @returm pos en array de Vehiculos
+    */
+    
+    private int buscarVehiculo(String Nombre){
+        boolean encontrado = false;
+        int pos = 0;
+        for(int i = 0; i < this.equipo.size() || encontrado == false; i++){
+            if(this.equipo.get(i).getNombre().equals(Nombre)){
+                pos = i;
+                encontrado = true;
+            }
+        }
+        
+        return pos;
+    }
+    
+    
     /**
     * @author grego
     * Función para  ir actualizando la posición de cada agente, llamar justo despues del movimiento
@@ -108,9 +116,12 @@ public class Memoria {
     * @param {nueva posición del agente x}
     * @param {nueva posición del agente y}
     */
-    public void actuPosAgentes(int Agente, int x,int y){
-             Pair posicionAgente = new Pair(x,y);
-             this.posicionesAgentes.set(Agente, posicionAgente);
+    public void actuPosAgentes(String nombreAgente, int x,int y){
+             //Pair posicionAgente = new Pair(x,y);
+             //this.posicionesAgentes.set(Agente, posicionAgente);
+             int pos = this.buscarVehiculo(nombreAgente);
+             this.equipo.get(pos).setX(x);
+             this.equipo.get(pos).setY(y);
     }
     //
     //Getter para obtener lo que tenemos alrededor recive por parametro el agente desde el que 
@@ -122,9 +133,12 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getN(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getN(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
+        //int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
+        //int auxY = (Integer)posicionesAgentes.get(agente).getValue();
         auxY--;        
         return mapa.get(auxY).get(auxX);
     }
@@ -135,9 +149,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getS(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getS(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxY++;
         return mapa.get(auxY).get(auxX);
     }
@@ -148,9 +163,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getE(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getE(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX++;
        
         return mapa.get(auxY).get(auxX);
@@ -162,9 +178,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getW(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getW(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX--;
         return mapa.get(auxY).get(auxX);
     }
@@ -174,9 +191,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getNE(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getNE(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX++;
         auxY--;
         return mapa.get(auxY).get(auxX);
@@ -188,9 +206,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getNW(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getNW(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX--;
         auxY--;
         return mapa.get(auxY).get(auxX);
@@ -202,9 +221,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getSE(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getSE(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX++;
         auxY++;
         return mapa.get(auxY).get(auxX);
@@ -216,9 +236,10 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
-    public int getSW(int agente){
-        int auxX =  (Integer)posicionesAgentes.get(agente).getKey();
-        int auxY = (Integer)posicionesAgentes.get(agente).getValue();
+    public int getSW(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        int auxX = this.equipo.get(pos).getX();
+        int auxY = this.equipo.get(pos).getY();
         auxX--;
         auxY++;
         return mapa.get(auxY).get(auxX);
@@ -230,8 +251,9 @@ public class Memoria {
     * @param {numero de agente Agente}
     * @return {tipo de agente}
     */
-    public TipoVehiculo getTipo(int agente){
-        return miEquipo.get(agente);
+    public TipoVehiculo getTipo(String nombreAgente){
+        int pos = this.buscarVehiculo(nombreAgente);
+        return this.equipo.get(pos).getTipo();
     }
     
     /*
@@ -242,10 +264,12 @@ public class Memoria {
     * @param {percepcion del agente} 
     */
     
-    public void actuMapa(String movementCommand, int agente, ArrayList<ArrayList<Integer>> radar){
+    public void actuMapa(String movementCommand, String nombreAgente, ArrayList<ArrayList<Integer>> radar){
         
-        int MenX = (Integer)posicionesAgentes.get(agente).getKey();
-        int MenY = (Integer)posicionesAgentes.get(agente).getValue();
+        int pos = this.buscarVehiculo(nombreAgente);
+        int MenX = this.equipo.get(pos).getX();
+        int MenY = this.equipo.get(pos).getY();
+       
         
         //Ajusto mi posicion en funcion del movimiento
         if (movementCommand.equals("moveW") ){
@@ -286,9 +310,11 @@ public class Memoria {
         } 
         
         //Grabamos en memoria la posición reajustada del cliente
-        Pair posicionAgente = new Pair(MenX,MenY);
-        this.posicionesAgentes.set(agente, posicionAgente);
-        
+        //Pair posicionAgente = new Pair(MenX,MenY);
+        //this.posicionesAgentes.set(agente, posicionAgente);
+        this.equipo.get(pos).setX(MenX);
+        this.equipo.get(pos).setY(MenY);
+
         
         //Contadores para la matriz del radar
         int conRadarI = 0;
@@ -309,7 +335,7 @@ public class Memoria {
         }
         
         //El id del agente en el mapa es el agente +10
-        int idAgente = agente+10;
+        int idAgente = pos+10;
         
         mapa.get(MenX).set(MenY,idAgente);
         
