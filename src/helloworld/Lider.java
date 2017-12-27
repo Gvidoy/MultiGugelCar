@@ -181,14 +181,20 @@ public class Lider extends SingleAgent{
             ex.printStackTrace();
         }
     }
-
+    /**
+     * @author Nacho
+     * @param msg 
+     */
     private void recibirDatosIniciales(ACLMessage msg) {
         System.out.println("Mensaje recividoloo " + msg.getPerformative() + " ID " + msg.getConversationId()); 
-        System.out.println(msg.getContent());
-         // Falta hacer el paso de datos a memoria
-        // this. = msg.getContent();
 
+          String mensaje = msg.getContent();
+      
+       String[] partes = mensaje.split(",");
+        
+          //Memoria.registrarAgente(partes, msg.getSender());
           
+          System.out.println("Enviado a la memoria: " + mensaje);
     }
 
     private boolean comprobarMovimiento(ACLMessage inb) {
@@ -225,7 +231,6 @@ public class Lider extends SingleAgent{
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
       } 
-
     
     
 }

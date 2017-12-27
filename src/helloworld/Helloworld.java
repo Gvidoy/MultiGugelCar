@@ -19,8 +19,9 @@ import org.apache.log4j.xml.DOMConfigurator;
  * @author Dani
  */
 public class Helloworld {
-    
-    public static final String NOMBRE_AGENTE = "agentep29";
+
+    public static final String NOMBRE_AGENTE = "agentep298";
+  
     public static final String MAPA = "map1";
     /**
      * @param args the command line arguments

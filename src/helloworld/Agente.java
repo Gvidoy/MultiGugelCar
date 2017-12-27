@@ -110,6 +110,9 @@ public class Agente extends SingleAgent {
             checkin();
             
             doQuery_ref();
+            
+            enviar_datos_inicales();
+            
 
             while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
@@ -298,11 +301,54 @@ public class Agente extends SingleAgent {
         } // CIERRE DEL ELSE (!encontrado objetivo)
         
         try {
-            this.performMove(next_move);
-            //this.last_move = next_move;
+            if(askLider(next_move)){
+                 this.performMove(next_move);
+            }else{
+                // TODO 
+            }
         } catch (InterruptedException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private boolean askLider(String move){
+        
+        setDestinatario(this.nombreLider);
+        outbox.setConversationId("solicitarMovimiento");
+        outbox.setInReplyTo(reply_withID);
+        outbox.setContent(move);
+        outbox.setPerformative(ACLMessage.QUERY_IF);  
+        this.send(outbox);   
+        
+        
+        Boolean moverse = false;
+        ACLMessage inbox = new ACLMessage();
+          try {
+               while (queue.isEmpty()){ Thread.sleep(1);};   
+                inbox = queue.Pop();
+              
+            switch (inbox.getPerformativeInt()) {
+                case ACLMessage.FAILURE:
+                    System.out.println("Failure: " + inbox.getContent());
+                    this.reply_withID = inbox.getReplyWith();
+                    break;
+                case ACLMessage.NOT_UNDERSTOOD:
+                    System.out.println("Failure: " + inbox.getContent());
+                    this.reply_withID = inbox.getReplyWith();
+                    break;
+                case ACLMessage.CONFIRM:
+                    moverse = true;
+                    break;
+                case ACLMessage.DISCONFIRM:
+                    moverse = false;
+                    break;
+                default:
+                    break;
+            }
+          } catch (InterruptedException ex) {
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+          return moverse; 
     }
     
     /**
@@ -1201,17 +1247,15 @@ public class Agente extends SingleAgent {
     /**
     * @author Dani
     */
-    private void enviar_datos_inicales(ACLMessage datos) {
+    private void enviar_datos_inicales() {
         
         System.out.println("Envio datos Iniciales");
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.INFORM);  
-        outbox.setContent(datos.getContent());
+        outbox.setContent(this.x + "," + this.y + "," + this.tipoVehiculo);
         outbox.setConversationId("DatosI");
         this.send(outbox);     
         System.out.println("He enviado los datos iniciales");
-
-       
     }
     
     /**
