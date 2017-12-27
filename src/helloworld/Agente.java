@@ -110,12 +110,12 @@ public class Agente extends SingleAgent {
             checkin();
             
             doQuery_ref();
-
+/*
             while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
                 this.doQuery_ref();
             }
-            
+  */          
             System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
         } catch (InterruptedException | JSONException ex) {

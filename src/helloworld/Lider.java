@@ -68,7 +68,11 @@ public class Lider extends SingleAgent{
                      ex.printStackTrace();
                  }
                  if (cont== 17){
-                    cancel();
+                    try {
+                        cancel();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Lider.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     break;
                  }
              }
@@ -141,7 +145,7 @@ public class Lider extends SingleAgent{
          /**
         * @author Dani
         */
-        public boolean cancel(){
+        public boolean cancel() throws IOException{
              
             System.out.println("\n Enviando peticion de cancelacion");
             setDestinatario("Bellatrix");
@@ -157,7 +161,9 @@ public class Lider extends SingleAgent{
                     inb = queue.Pop(); 
                    if (inb.getPerformativeInt() == ACLMessage.INFORM){
                       System.out.println("INFORM " + inb.getContent());
-                  } 
+                      generarMapaTraza(inb);
+                   } 
+                   
 
               } catch (InterruptedException ex) { 
                   Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -183,10 +189,9 @@ public class Lider extends SingleAgent{
           
     }
     
-    public void generarMapaTraza() throws IOException{
+    public void generarMapaTraza(ACLMessage inbox){
         try {
             System.out.println("Recibiendo traza");
-            ACLMessage inbox = this.receiveACLMessage();
             JsonObject injson = Json.parse(inbox.getContent()).asObject();
             JsonArray ja = injson.get("trace").asArray();
 
@@ -194,17 +199,18 @@ public class Lider extends SingleAgent{
             for(int i = 0; i<data.length; i++){
                 data[i] = (byte) ja.get(i).asInt();
             }
+            
             FileOutputStream fos = new FileOutputStream("mitraza.png");
             fos.write(data);
             fos.close();
             System.out.println("Traza Guardada en mitraza.png");
 
-        } catch (InterruptedException | FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }       
+      }       
 
     
     
