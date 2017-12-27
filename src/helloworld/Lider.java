@@ -5,9 +5,15 @@
  */
 package helloworld;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
@@ -176,7 +182,29 @@ public class Lider extends SingleAgent{
 
           
     }
-        
+    
+    public void generarMapaTraza() throws IOException{
+        try {
+            System.out.println("Recibiendo traza");
+            ACLMessage inbox = this.receiveACLMessage();
+            JsonObject injson = Json.parse(inbox.getContent()).asObject();
+            JsonArray ja = injson.get("trace").asArray();
+
+            byte data[] = new byte [ja.size()];
+            for(int i = 0; i<data.length; i++){
+                data[i] = (byte) ja.get(i).asInt();
+            }
+            FileOutputStream fos = new FileOutputStream("mitraza.png");
+            fos.write(data);
+            fos.close();
+            System.out.println("Traza Guardada en mitraza.png");
+
+        } catch (InterruptedException | FileNotFoundException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }       
 
     
     
