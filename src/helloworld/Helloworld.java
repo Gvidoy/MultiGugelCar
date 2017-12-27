@@ -22,8 +22,9 @@ public class Helloworld {
     /**
      * @param args the command line arguments
      */
+    
     public static void main(String[] args) {
-        
+       
         Agente a;
      //   AgentsConnection.connect("localhost",5672,"test","guest","guest",false);  
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
@@ -36,6 +37,15 @@ public class Helloworld {
             System.out.println("Error al crear el agente ");
         }
  
+        
+
+
+    
     }
+    
+ 
+    
+    
+
     
 }
