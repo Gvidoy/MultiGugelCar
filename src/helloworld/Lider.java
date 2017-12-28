@@ -29,7 +29,9 @@ public class Lider extends SingleAgent{
     private int agentCount;
     private String conversationID;
     private ACLMessage outbox;
-   private MessageQueue queue;
+    private MessageQueue queue;
+    private int coord_x_objetivo;
+    private int coord_y_objetivo;
 
     /**funciones
      * - Enviar mapa tamaño n
@@ -49,7 +51,9 @@ public class Lider extends SingleAgent{
         this.conversationID = "";
         this.agentCount = -1; 
         queue = new MessageQueue(100);
-
+        
+        this.coord_x_objetivo = 0;
+        this.coord_y_objetivo = 0;
     }
 
     @Override
@@ -57,52 +61,78 @@ public class Lider extends SingleAgent{
 
         System.out.println("\nHola soy el Lidl ");
         System.out.println("["+this.getName()+"] Activado");
-       int cont = 0;
+        int cont = 0;
         while (true)  {
-             while (queue.isEmpty())  { // Iddle mientras no ha recibido nada. No bloqueante
+            while (queue.isEmpty())  { // Iddle mientras no ha recibido nada. No bloqueante
                 cont++;
-                 System.out.println("["+this.getName()+"] Iddle " + cont);
-                 try {
-                     Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
-                 } catch (InterruptedException ex) {
-                     ex.printStackTrace();
-                 }
-                 if (cont== 17){
+                System.out.println("["+this.getName()+"] Iddle " + cont);
+                try {
+                    Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                if (cont== 17){
                     cancel();
                     break;
-                 }
-             }
-             if(cont == 17){
-                 break;
-             }
-             // En cuanto la cola tiene al menos un mensaje, se extraen todos
-             // los que haya
+                }
+            }
+            if(cont == 17){
+                break;
+            }
+            // En cuanto la cola tiene al menos un mensaje, se extraen todos
+            // los que haya
             try {
                 ACLMessage inbox = queue.Pop();
-                 System.out.println("\n["+this.getName()+"] Procesando: "+inbox.getPerformative() + " De " + inbox.getSender().name + " ID " + inbox.getConversationId() );
-                 switch(inbox.getConversationId()){
-                     case "DatosI":
-                         recibirDatosIniciales(inbox);
-                         break;
-                     case "solicitarMovimiento":
-                         if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
-                             comprobarMovimiento(inbox);
-                         }  
-                 }
-                 
-                if(inbox.getPerformativeInt() == ACLMessage.REQUEST || inbox.getPerformativeInt() == ACLMessage.INFORM){
-                    sendConversationID(inbox);
+                System.out.println("\n["+this.getName()+"] Procesando: "+inbox.getPerformative() + " De " + inbox.getSender().name + " ID " + inbox.getConversationId() );
+                switch(inbox.getConversationId()){
+                    case "DatosI":
+                        recibirDatosIniciales(inbox);
+                        break;
+                    case "solicitarMovimiento":
+                        if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF)
+                            comprobarMovimiento(inbox);
+                        break;
+                    case "envioCoordenadasObjetivo":
+                        guardarCoordenadas(inbox);
+                        break;
+                    default:
+                        break;
                 }
+                 
+                if(inbox.getPerformativeInt() == ACLMessage.REQUEST || inbox.getPerformativeInt() == ACLMessage.INFORM)
+                    sendConversationID(inbox);
 
-             } catch (InterruptedException ex) {
-                 ex.printStackTrace();
-             }
+            }
+            catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
 
-         }
+        }
     }
+    
+    /**
+     * @author Ruben
+     * Funcion que guarda las coordenadas recibidas del agente que ha encontrado el objetivo
+     * @param msg
+     * @throws InterruptedException 
+     */
+    
+    private void guardarCoordenadas(ACLMessage in){
+        
+        System.out.println("Recibidas las coordenadas del objetivo. Estas son: " + in.getContent() + ". Guardando dichas coordenadas...");
+        
+        JsonObject objeto = Json.parse(in.getContent()).asObject();
+        
+        this.coord_x_objetivo = objeto.get("x").asInt();
+        this.coord_y_objetivo = objeto.get("y").asInt();
+        
+        System.out.println("Coordenada x del objetivo " + Integer.toString(objeto.get("x").asInt()));
+        System.out.println("Coordenada y del objetivo " + Integer.toString(objeto.get("y").asInt()));
+    }
+    
         public void sendConversationID(ACLMessage msg) throws InterruptedException{
         //  ACLMessage inbox = new ACLMessage();
-          System.out.println("Mensaje recivido " + msg.getPerformative());
+          System.out.println("Mensaje recibido " + msg.getPerformative());
           ACLMessage outbox;
 
           if (msg.getPerformativeInt() == ACLMessage.REQUEST){
