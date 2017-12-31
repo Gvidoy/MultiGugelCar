@@ -54,7 +54,6 @@ public class Agente extends SingleAgent {
     private String last_move;
     private int coord_x_objetivo;
     private int coord_y_objetivo;
-    private Pair<Integer,Integer> checkpoint;
     private int num_pasos;
     private int indice_ultima_direccion;
     
@@ -87,7 +86,6 @@ public class Agente extends SingleAgent {
         this.last_move = "";
         this.coord_x_objetivo = 0;
         this.coord_y_objetivo = 0;
-        this.checkpoint = new Pair(0,0);
         this.num_pasos = 0;
         this.indice_ultima_direccion = 0;
         
@@ -193,6 +191,34 @@ public class Agente extends SingleAgent {
     }
     
     /**
+     * @author Ruben
+     * Metodo que envia al lider sobre las coordenadas absolutas del objetivo encontrado
+     */
+    private void enviarCoordenadasObjetivo(){
+        
+        System.out.println("El objetivo ha sido encontrado. Enviando las coordenadas al lider...");
+        
+        ACLMessage out = new ACLMessage();
+        out.setSender(this.getAid());
+        out.setReceiver(new AgentID(Agente.nombreLider));
+        
+        JSONObject content = new JSONObject();
+        
+        try {
+            content.put("x", this.coord_x_objetivo);
+            content.put("y", this.coord_y_objetivo);
+        } catch (JSONException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        out.setContent(content.toString());
+        out.setConversationId("envioCoordenadasObjetivo");
+        out.setPerformative(ACLMessage.INFORM);
+        
+        this.send(out);
+    }
+    
+    /**
     * @author Ruben 
     * Funcion para buscar el objetivo. Puede ser un coche, un camion o un dron. Cada uno lo buscará de una manera diferente.
     *
@@ -201,6 +227,7 @@ public class Agente extends SingleAgent {
     private void buscarObjetivo(){
 
 	String next_move = "";
+        ArrayList<Pair<Integer, Integer>> direcciones = new ArrayList();
 	
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
 	if(this.battery <= 5)
@@ -221,6 +248,7 @@ public class Agente extends SingleAgent {
             // Notificamos al lider que hemos encontrado el objetivo y nos dirigimos hacia el
 
             // NOTIFICAR AL LIDER DE LAS COORDENADAS ABSOLUTAS DEL OBJETIVO
+            enviarCoordenadasObjetivo();
             
             // FIN DE LA BUSQUEDA DEL OBJETIVO
 
@@ -265,7 +293,7 @@ public class Agente extends SingleAgent {
                 else
                     next_move = "moveSE";
                     
-            } 
+            } // FIN DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
         } // FIN DEL IF DE OBJETIVO ENCONTRADO
         else {
             
@@ -277,7 +305,11 @@ public class Agente extends SingleAgent {
                 // Si este es el primer movimiento del agente, tendremos que decidir que direccion sera la inicial.
                 // En este caso tendremos en cuenta el numero de posiciones libres que hay en cada direccion. La que tenga el mayor numero sera la elegida
     		
-                next_move = buscarNuevaDireccion();
+                direcciones = buscarNuevaDireccion();
+                
+                int indice_direccion = direcciones.get(0).getKey();
+                
+                next_move = traducirIndiceDireccion(indice_direccion);
                 
                 //this.checkpoint = new Pair(Agente.x, Agente.y);
                 this.last_move = next_move;
@@ -294,7 +326,13 @@ public class Agente extends SingleAgent {
                 }
                 else{
                     this.num_pasos = 0;
-                    next_move = buscarNuevaDireccion();
+                    
+                    direcciones = buscarNuevaDireccion();
+                
+                    int indice_direccion = direcciones.get(0).getKey();
+                
+                    next_move = traducirIndiceDireccion(indice_direccion);
+                    
                     this.last_move = next_move;
                 }
                 
@@ -302,14 +340,67 @@ public class Agente extends SingleAgent {
         } // CIERRE DEL ELSE (!encontrado objetivo)
         
         try {
-            if(askLider(next_move)){
-                 this.performMove(next_move);
-            }else{
-                // TODO 
+            // Mientras que el lider no nos deje ir en una direccion le seguiremos preguntando. En el momento en el que nos deje ir, iremos.
+            while(!askLider(next_move)){
+                direcciones.remove(0);
+                
+                int indice_direccion = direcciones.get(0).getKey();
+                next_move = traducirIndiceDireccion(indice_direccion);
             }
+            
+            this.performMove(next_move);
+            
         } catch (InterruptedException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * @author Ruben
+     * Funcion que coge el indice de una direccion y nos lo traduce en la direccion real que tendra que tomar el vehiculo. Seguira el siguiente patron:
+     *  posicion 0: moveNW
+     *  posicion 1: moveN
+     *  posicion 2: moveNE 
+     *  posicion 3: moveW
+     *  posicion 4: moveE
+     *  posicion 5: moveSW
+     *  posicion 6: moveS
+     *  posicion 7: moveSE
+     * @param indice_direccion
+     * @return direccion
+     */
+    
+    private String traducirIndiceDireccion(int indice){
+        String direccion = "";
+        
+        switch(indice){
+            case 0:
+                direccion = "moveNW";
+                break;
+            case 1:
+                direccion = "moveN";
+                break;
+            case 2:
+                direccion = "moveNE";
+                break;
+            case 3:
+                direccion = "moveW";
+                break;
+            case 4:
+                direccion = "moveE";
+                break;
+            case 5:
+                direccion = "moveSW";
+                break;
+            case 6:
+                direccion = "moveS";
+                break;
+            case 7:
+                direccion = "moveSE";
+                break;
+        }
+        
+        return direccion;
     }
     
     private boolean askLider(String move){
@@ -319,8 +410,7 @@ public class Agente extends SingleAgent {
         outbox.setInReplyTo(reply_withID);
         outbox.setContent(move);
         outbox.setPerformative(ACLMessage.QUERY_IF);  
-        this.send(outbox);   
-        
+        this.send(outbox);
         
         Boolean moverse = false;
         ACLMessage inbox = new ACLMessage();
@@ -535,7 +625,7 @@ public class Agente extends SingleAgent {
     * o cuando esta buscando una nueva direccion que tomar ya que no puede volver a ir en la misma direccion que la ultima vez
     */
     
-    private String buscarNuevaDireccion(){
+    private ArrayList<Pair<Integer, Integer>> buscarNuevaDireccion(){
         
         // La logica sera DIFERENTE para cada tipo de vehiculo. En el dron no tendremos en cuenta los obstaculos, en el resto si.
         
@@ -543,15 +633,6 @@ public class Agente extends SingleAgent {
         // Si la direccion 'i' se encuentra a 'true' significa que es una direccion que puede tomar el vehiculo. En caso de que sea
         // 'false' significa que el vehiculo no puede tomarla, bien porque hay un obstaculo, bien porque se encuentra el limite
         // del mundo.
-        // Las direcciones se indexaran del siguiente modo:
-        //  posicion 0: moveNW
-        //  posicion 1: moveN
-        //  posicion 2: moveNE 
-        //  posicion 3: moveW
-        //  posicion 4: moveE
-        //  posicion 5: moveSW
-        //  posicion 6: moveS
-        //  posicion 7: moveSE
         
         boolean[] posibles_movimientos = new boolean[8];
         
@@ -613,6 +694,8 @@ public class Agente extends SingleAgent {
         int maximo = 0, indice_direccion = 0;
         
         int indice_prohibido = 7 - this.indice_ultima_direccion;
+        
+        ArrayList<Pair<Integer, Integer>> direcciones = new ArrayList();
         
         for(int k=0; k < 8; k++)
             if(posibles_movimientos[k] && k != indice_prohibido){
@@ -785,7 +868,7 @@ public class Agente extends SingleAgent {
                         if(this.sensor.get(i).get(j) == 0)
                             contador++;
                 
-                // Si el numero de casillas es mayor que el maximo, actualizamos el maximo 
+                /* Si el numero de casillas es mayor que el maximo, actualizamos el maximo 
                 // y guardamos el indice de dicha direccion
                 if(contador > maximo){
                     maximo = contador;
@@ -796,43 +879,40 @@ public class Agente extends SingleAgent {
                     
                     if(r == 1)
                         indice_direccion = k;
-                }
+                }*/
+                
+                Pair<Integer,Integer> elemento = new Pair(k,contador);
+                direcciones.add(elemento);
             } // CIERRE DEL IF
+        
+        
+        // Una vez obtenidas todos los indices y los contadores de las direcciones validas. Las ordenamos de mayor a menor segun su contador de casillas libres.
+        ordenarPorBurbuja(direcciones);
         
         // Ya solo falta obtener la direccion elegida a partir del indice anterior
         
-        String direccion = "";
+        return direcciones;
+    }
+    
+    /**
+     * @author Ruben
+     * Funcion que ordena un vector por el metodo de burbuja. Sera usado para ordenar un ArrayList de pares de enteros que contienen los indices de las posibles direcciones
+     * y sus contadores con el numero de casillas libres en esa direccion.
+     * Los pares seran ordenados de mayor a menor para coger las direcciones mas probables a las menos
+     */
+    
+    private void ordenarPorBurbuja(ArrayList<Pair<Integer, Integer>> vector){
         
-        switch(indice_direccion){
-            case 0:
-                direccion = "moveNW";
-                break;
-            case 1:
-                direccion = "moveN";
-                break;
-            case 2:
-                direccion = "moveNE";
-                break;
-            case 3:
-                direccion = "moveW";
-                break;
-            case 4:
-                direccion = "moveE";
-                break;
-            case 5:
-                direccion = "moveSW";
-                break;
-            case 6:
-                direccion = "moveS";
-                break;
-            case 7:
-                direccion = "moveSE";
-                break;
-        }
+        Pair<Integer, Integer> aux;
+        int tam = vector.size();
         
-        this.indice_ultima_direccion = indice_direccion;
-        
-        return direccion;
+        for(int i = 0; i < tam; i++)
+            for(int j = 0; j < (tam - i); j++)
+                if(vector.get(j).getValue() < vector.get(j+1).getValue()){
+                    aux = vector.get(j);
+                    vector.set(j, vector.get(j+1));
+                    vector.set(j+1, aux);
+                }
     }
     
     /*
@@ -871,6 +951,7 @@ public class Agente extends SingleAgent {
         }
     }
     */
+    
     /**
     * @author Dani
     */
