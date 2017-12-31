@@ -20,7 +20,7 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "agentep298";
+    public static final String NOMBRE_AGENTE = "agentep00dx";
   
     public static final String MAPA = "map1";
     /**
@@ -39,7 +39,6 @@ public class Helloworld {
 
             a = new Agente(new AgentID(NOMBRE_AGENTE));
             a .start();
-     
         } catch (Exception ex) {
             System.out.println("Error al crear el agente ");
         }
