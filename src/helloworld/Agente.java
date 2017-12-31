@@ -31,7 +31,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    private static String nombreLider = "Lidllll";
+    private static String nombreLider = "Lidlll6";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
@@ -111,13 +111,11 @@ public class Agente extends SingleAgent {
 
             Thread.sleep(3000);
             enviar_datos_inicales();
-            
-/*
+            System.out.println("-------------Procedemos a buscar el objetivo--------------------");
             while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
                 this.doQuery_ref();
-            }
-    */        
+            }        
             System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
         } catch (InterruptedException | JSONException ex) {
@@ -404,7 +402,7 @@ public class Agente extends SingleAgent {
     }
     
     private boolean askLider(String move){
-        
+        System.out.println("llego a enviar al lider");
         setDestinatario(this.nombreLider);
         outbox.setConversationId("solicitarMovimiento");
         outbox.setInReplyTo(reply_withID);
@@ -902,17 +900,24 @@ public class Agente extends SingleAgent {
      */
     
     private void ordenarPorBurbuja(ArrayList<Pair<Integer, Integer>> vector){
+       int tam = vector.size();
+
+        for(int i = 0; i < tam; i++){
+            System.out.println("Comparo:" + vector.get(i).getValue());
+        }
         
         Pair<Integer, Integer> aux;
-        int tam = vector.size();
+
         
         for(int i = 0; i < tam; i++)
-            for(int j = 0; j < (tam - i); j++)
+            for(int j = 0; j < (tam - 1); j++){
+                System.out.println("Comparo:" + vector.get(j).getValue() + " con " + vector.get(j+1).getValue());
                 if(vector.get(j).getValue() < vector.get(j+1).getValue()){
                     aux = vector.get(j);
                     vector.set(j, vector.get(j+1));
                     vector.set(j+1, aux);
                 }
+            }
     }
     
     /*
@@ -1198,6 +1203,7 @@ public class Agente extends SingleAgent {
 
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
+                  
                   System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
                   this.reply_withID = inbox.getReplyWith();
                   
@@ -1211,12 +1217,33 @@ public class Agente extends SingleAgent {
                   objetoSensor = objetoSensor.get("result").asObject();
                   JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
                   leerSensor(vectorSensor);
-                  System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y ); 
+                  System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y );
+                  
+                  if(!"".equals(this.last_move)){
+                        System.out.println("Hacemos peticion para actualizar mapa");
+
+                        setDestinatario(Agente.nombreLider);
+                        outbox.setPerformative(ACLMessage.INFORM);  
+                        outbox.setContent(this.last_move + "-" + this.getName() + "-" + this.sensor);
+                        outbox.setConversationId("DatosSensor");
+                        this.send(outbox);
+                        while (queue.isEmpty()){Thread.sleep(1);};
+                        ACLMessage inb = queue.Pop();
+                            if (inb.getPerformativeInt() == ACLMessage.INFORM ){
+                                System.out.println("Se ha actualizado el mapa en agente y lider");
+                            }
+                  }
+                  
+                  
+                  
               } 
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
         
+          
+          
+          
         return inbox;
         
     }
@@ -1330,7 +1357,7 @@ public class Agente extends SingleAgent {
     /**
     * @author Dani
     */
-     private void enviar_datos_inicales() {
+     private void enviar_datos_inicales() throws InterruptedException {
         
         System.out.println("Envio datos Iniciales");
 
@@ -1339,8 +1366,16 @@ public class Agente extends SingleAgent {
         outbox.setContent(this.x + "," + this.y + "," + this.tipoVehiculo);
         outbox.setConversationId("DatosI");
         this.send(outbox);     
-
-        System.out.println("He enviado los datos iniciales " + this.x + "," + this.y + "," + this.tipoVehiculo);
+        
+        while (queue.isEmpty()){
+           Thread.sleep(1);
+        };
+        
+        ACLMessage inb = queue.Pop();
+            if (inb.getPerformativeInt() == ACLMessage.INFORM ){ 
+        }
+        
+        System.out.println("datos iniciales recibidos por lider " + this.x + "," + this.y + "," + this.tipoVehiculo);
     }
     
     /**
