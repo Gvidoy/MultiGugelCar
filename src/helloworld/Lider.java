@@ -14,6 +14,7 @@ import es.upv.dsic.gti_ia.core.SingleAgent;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
@@ -49,7 +50,7 @@ public class Lider extends SingleAgent{
     public Lider(AgentID aid) throws Exception {
         super(aid);
         this.conversationID = "";
-        this.agentCount = -1; 
+        this.agentCount = 0; 
         queue = new MessageQueue(100);
         
         this.coord_x_objetivo = 0;
@@ -68,17 +69,17 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(400); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 17){
+                if (cont== 30){
 
                     cancel();
                     break;
                 }
             }
-            if(cont == 17){
+            if(cont == 30){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
@@ -91,12 +92,29 @@ public class Lider extends SingleAgent{
                         recibirDatosIniciales(inbox);
                         break;
                     case "solicitarMovimiento":
-                        if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF)
-                            comprobarMovimiento(inbox);
+                        if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
+                            System.out.println("Se ha solicitado una peticion de movimiento");
+                            //memoria.verMapaCoche(inbox.getSender().name, 20, 20);
+                            
+                            boolean answer = comprobarMovimiento(inbox);
+                            outbox = new ACLMessage();
+                            outbox.setSender(this.getAid());
+                           if(answer) {
+                                outbox.setPerformative(ACLMessage.CONFIRM);
+                           }else{
+                                outbox.setPerformative(ACLMessage.DISCONFIRM);  
+                           }
+                            System.out.println("La respuesta ha sido: " + answer);
+                            outbox.setReceiver(inbox.getSender());      
+                            this.send(outbox);
+                        }
+                         
                         break;
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
+                    case "DatosSensor":
+                       actualizarMapaLider(inbox);
                     default:
                         break;
                 }
@@ -160,12 +178,12 @@ public class Lider extends SingleAgent{
                     this.send(outbox);
                     System.out.println("Lid, Enviado: Si hay conversation ID.");
                 }
-                
+            this.agentCount++;
             }else if (msg.getPerformativeInt() == ACLMessage.INFORM){
                 this.conversationID = msg.getContent();
                 System.out.println("Clave: " + this.conversationID + " recibida en lider");
             }
-            this.agentCount++;
+          
             System.out.println("Total Agentes: " + this.agentCount );
     };
         
@@ -240,39 +258,46 @@ public class Lider extends SingleAgent{
               break;
           }
           memoria.addVehiculo(xv,yv,msg.getSender().getLocalName(),tipo);
+            outbox = new ACLMessage();
+            outbox.setSender(this.getAid());
+            outbox.setPerformative(ACLMessage.INFORM);
+            outbox.setReceiver(msg.getSender());      
+            this.send(outbox);
+
   
       
     }
 
     private boolean comprobarMovimiento(ACLMessage inb) {
         String agent = inb.getSender().name;
+        System.out.println("Movimiento recibido:" + inb.getContent());
         switch(inb.getContent()){
             case "moveS":
-             if(memoria.getS(agent) == 0 || memoria.getS(agent) == 12){return true;};
+             if(memoria.getS(agent) <= 0 || memoria.getS(agent) == 3){return true;};
             break;
             case "moveN":
-             if(memoria.getN(agent) == 0 || memoria.getN(agent) == 12){return true;};
+             if(memoria.getN(agent) <= 0 || memoria.getN(agent) == 3){return true;};
             break;
             case "moveSW":
-             if(memoria.getSW(agent) == 0 || memoria.getSW(agent) == 12){return true;};
+             if(memoria.getSW(agent) <= 0 || memoria.getSW(agent) == 3){return true;};
             break;
             case "moveSE":
-             if(memoria.getSE(agent) == 0 || memoria.getSE(agent) == 12){return true;};
+             if(memoria.getSE(agent) <= 0 || memoria.getSE(agent) == 3){return true;};
             break;
             case "moveNE":
-             if(memoria.getNE(agent) == 0 || memoria.getNE(agent) == 12){return true;};
+             if(memoria.getNE(agent) <= 0 || memoria.getNE(agent) == 3){return true;};
             break;
             case "moveNW":
-             if(memoria.getNW(agent) == 0 || memoria.getNW(agent) == 12){return true;};
+             if(memoria.getNW(agent) <= 0 || memoria.getNW(agent) == 3){return true;};
             break;
             case "moveW":
-             if(memoria.getW(agent) == 0 || memoria.getW(agent) == 12){return true;};
+             if(memoria.getW(agent) <= 0 || memoria.getW(agent) == 3){return true;};
             break;
             case "moveE":
-             if(memoria.getE(agent) == 0 || memoria.getE(agent) == 12){return true;};
+             if(memoria.getE(agent) <= 0 || memoria.getE(agent) == 3){return true;};
             break;
         }
-        
+
         if(memoria.getTipo(agent) == TipoVehiculo.DRON){ return true;};
         return false;
     }
@@ -299,6 +324,47 @@ public class Lider extends SingleAgent{
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
       } 
+
+    private void actualizarMapaLider(ACLMessage inbox) {
+            
+        System.out.println(inbox.getContent());
+        
+        String mensaje = inbox.getContent();
+          
+          String[] partes = mensaje.split("-");
+          String last_move =  partes[0];
+          String nombreV =  partes[1];
+          String vector = partes[2];
+        //vector.substring(1);
+         vector = vector.replace(",","");
+          vector = vector.replace("[","");
+          vector = vector.replace("]","");
+          vector = vector.replace(" ","");
+          char[] vec = vector.toCharArray();
+          System.out.println("Primera fila: " + vector);
+        ArrayList<ArrayList<Integer>>  sensor = new ArrayList<ArrayList<Integer>>();
+        TipoVehiculo tiv = memoria.getTipo(nombreV);
+        int max = 0;
+        switch(tiv){
+            case CAMION: max = 11;break;
+            case COCHE: max = 5;break;
+            case DRON: max = 3;break;
+        }
+        int contador = 0;
+        for(int i = 0; i < max; i++){
+            sensor.add(new ArrayList<Integer>());
+                for (int j = 0; j < max; j++){
+                    sensor.get(i).add((int)(vec[contador]));
+                    contador++;
+                    System.out.println(vec[contador]);
+                }
+                System.out.println("");
+        }
+        
+    System.out.println("Tengo memoria");
+          
+  
+    }
     
     
 }

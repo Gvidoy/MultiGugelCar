@@ -55,7 +55,7 @@ public class Memoria {
     for(int i = 0; i < 1000; i++){
         this.mapa.add(new ArrayList<Integer>());
             for (int j = 0; j < 1000; j++){
-                this.mapa.get(i).add(4);
+                this.mapa.get(i).add(-1);
             }
     }
     System.out.println("Tengo memoria");
@@ -65,6 +65,7 @@ public class Memoria {
 
         Vehiculo nuevoVehiculo = new Vehiculo(x,y,Nombre,tipo);
         this.equipo.add(nuevoVehiculo);
+        
         System.out.println("Anadido en memoria el "+ tipo + " : "+ Nombre + "  " + x + "-" + y );   
 
     }
@@ -98,7 +99,7 @@ public class Memoria {
     * @returm pos en array de Vehiculos
     */
     
-    private int buscarVehiculo(String Nombre){
+    public int buscarVehiculo(String Nombre){
         boolean encontrado = false;
         int pos = 0;
         for(int i = 0; i < this.equipo.size() || encontrado == false; i++){
@@ -371,7 +372,7 @@ public class Memoria {
 
     }
     
-        /**
+    /**
     * @author grego
     *
     *Visisualiza el mapa desde el centro de la memoria
@@ -380,6 +381,37 @@ public class Memoria {
     */
     public void verMapa(int x, int y,int a, int l){
      
+        
+     
+        //Delimito el centro
+        int L = l/2 + y;
+        int A = a/2 + x;   
+        
+       
+        //Muestro los datos del centro pasado por parametro
+        for(int i = y - l/2 ; i < L; i++){
+            for (int j = x - a/2; j < A; j++){
+                System.out.print(mapa.get(i).get(j));
+            }
+            System.out.println();
+        }
+
+    }
+    
+        /**
+    * @author grego
+    *
+    *Visisualiza el mapa desde el centro de la memoria
+    * @param a {Ancho ncasillar} 
+    * @param l {Alto ncasillas}
+    */
+    public void verMapaCoche(String nombreAgente,int a, int l){
+        
+        System.out.println("entro en verMapa");
+        int pos = this.buscarVehiculo(nombreAgente);
+        
+        int x = this.equipo.get(pos).getX();
+        int y = this.equipo.get(pos).getY();
      
         //Delimito el centro
         int L = l/2 + y;
