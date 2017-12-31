@@ -62,8 +62,11 @@ public class Memoria {
     }
   
     public void addVehiculo(int x, int y, String Nombre,TipoVehiculo tipo){
+
         Vehiculo nuevoVehiculo = new Vehiculo(x,y,Nombre,tipo);
         this.equipo.add(nuevoVehiculo);
+        System.out.println("Anadido en memoria el "+ tipo + " : "+ Nombre + "  " + x + "-" + y );   
+
     }
     
     /**

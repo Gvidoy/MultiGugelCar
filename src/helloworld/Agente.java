@@ -39,17 +39,17 @@ public class Agente extends SingleAgent {
     //mensajes
     private MessageQueue queue;
 
-    private static int battery;
-    private static int x;
-    private static int y;
-    private static ArrayList<ArrayList<Integer>> sensor;
-    private static ArrayList<ArrayList<Integer>> mapa;  
-    private static Boolean enObjetivo; 
-    private static TipoVehiculo tipoVehiculo;
+    private  int battery;
+    private  int x;
+    private  int y;
+    private  ArrayList<ArrayList<Integer>> sensor;
+    private  ArrayList<ArrayList<Integer>> mapa;  
+    private  Boolean enObjetivo; 
+    private  TipoVehiculo tipoVehiculo;
     
-    private static int fuelRate;
-    private static int range;
-    private static Boolean fly;
+    private  int fuelRate;
+    private  int range;
+    private  Boolean fly;
     
     private String last_move;
     private int coord_x_objetivo;
@@ -59,7 +59,7 @@ public class Agente extends SingleAgent {
     
     private boolean objetivo_encontrado;
     
-    private static int centro_mapa;
+    private int centro_mapa;
     
 
     public Agente() throws Exception {
@@ -108,15 +108,16 @@ public class Agente extends SingleAgent {
             checkin();
             
             doQuery_ref();
-            
+
+            Thread.sleep(3000);
             enviar_datos_inicales();
             
-
+/*
             while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
                 this.doQuery_ref();
             }
-            
+    */        
             System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
         } catch (InterruptedException | JSONException ex) {
@@ -144,7 +145,7 @@ public class Agente extends SingleAgent {
         int aux = 0;
         
         // En primer lugar debemos distinguir el tipo de vehiculo que ha encontrado el objetivo
-        switch(Agente.tipoVehiculo){
+        switch(this.tipoVehiculo){
             
             // En segundo lugar, usamos una variable auxiliar que varia dependiendo del vehiculo que ha encontrado el objetivo.
             // Esta variable nos ayudara a establecer las coordenadas correctas.
@@ -160,10 +161,10 @@ public class Agente extends SingleAgent {
         }
         
         // Obtenemos la coordenada 'x' del objetivo en valores absolutos
-        this.coord_x_objetivo = Agente.x-aux+this.coord_x_objetivo;
+        this.coord_x_objetivo = this.x-aux+this.coord_x_objetivo;
         
         // Hacemos lo mismo con la coordenada 'y'
-        this.coord_y_objetivo = Agente.y-aux+this.coord_y_objetivo;
+        this.coord_y_objetivo = this.y-aux+this.coord_y_objetivo;
         
     }
     
@@ -175,8 +176,8 @@ public class Agente extends SingleAgent {
         boolean encontrado = false;
         
         // Recorremos todo el radar del agente, hasta terminar o encontrar el objetivo
-        for(int i=0; i < Agente.range && !encontrado; i++){
-            for(int j=0; j < Agente.range && !encontrado; j++){
+        for(int i=0; i < this.range && !encontrado; i++){
+            for(int j=0; j < this.range && !encontrado; j++){
                 if(sensor.get(i).get(j) == 3){
                     // Una vez encontrado el objetivo, guardamos las coordenadas 'x' e 'y' del mismo
                     encontrado = true;
@@ -229,7 +230,7 @@ public class Agente extends SingleAgent {
         ArrayList<Pair<Integer, Integer>> direcciones = new ArrayList();
 	
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
-	if(Agente.battery <= 5)
+	if(this.battery <= 5)
             try {
                 this.refuel();
         } catch (InterruptedException ex) {
@@ -254,26 +255,26 @@ public class Agente extends SingleAgent {
              //INICIO DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
 
             // Dependiendo de donde se encuentre el objetivo nos moveremos en una direccion u otra
-            if(this.coord_x_objetivo < Agente.x){
+            if(this.coord_x_objetivo < this.x){
                 
                 // Si el OBJETIVO se encuentra a nuestra IZQUIERDA, nos moveremos hacia el OESTE
                 // ¿Hacia el NW, W o SW? Depende de si la coordenada 'y' del objetivo es MENOR, MAYOR o IGUAL que la del vehiculo
                 
-                if(this.coord_y_objetivo < Agente.y)
+                if(this.coord_y_objetivo < this.y)
                     next_move = "moveNW";
                 
-                else if(this.coord_y_objetivo == Agente.y)
+                else if(this.coord_y_objetivo == this.y)
                     next_move = "moveW";
                 
                 else
                     next_move = "moveSW";
             }
-            else if(this.coord_x_objetivo == Agente.x){
+            else if(this.coord_x_objetivo == this.x){
                 
                 // Si el OBJETIVO se encuentra en nuestra misma coordenada 'x', entonces, solo puede estar encima o debajo nuestra.
                 // Por lo tanto, nos tendremos que mover o al SUR o al NORTE. De nuevo, depende del valor de la coordenada 'y'
                 
-                if(this.coord_y_objetivo < Agente.y)
+                if(this.coord_y_objetivo < this.y)
                     next_move = "moveN";
             
                 else
@@ -283,10 +284,10 @@ public class Agente extends SingleAgent {
                 
                 // La ultima opcion es que el OBJETIVO se encuentra a nuestra DERECHA, en tal caso debemos de ir al ESTE.
                 // ¿Hacia el NE, E o SE? Depende de si la coordenada 'y' del objetivo es MENOR, MAYOR o IGUAL que la del vehiculo
-                if(this.coord_y_objetivo < Agente.y)
+                if(this.coord_y_objetivo < this.y)
                     next_move = "moveNE";
                 
-                else if(this.coord_y_objetivo == Agente.y)
+                else if(this.coord_y_objetivo == this.y)
                     next_move = "moveE";
                 
                 else
@@ -457,7 +458,7 @@ public class Agente extends SingleAgent {
                 
         switch(this.last_move){
             case "moveNW":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case COCHE:
                         coord_y = coord_x = 1;
                                 
@@ -470,7 +471,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveN":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 0;
                         coord_x = 1;
@@ -490,7 +491,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveNE":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 0;
                         coord_x = 2;
@@ -510,7 +511,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveW":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 1;
                         coord_x = 0;
@@ -530,7 +531,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveE":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 1;
                         coord_x = 2;
@@ -550,7 +551,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveSW":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 2;
                         coord_x = 0;
@@ -570,7 +571,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveS":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 2;
                         coord_x = 1;
@@ -590,7 +591,7 @@ public class Agente extends SingleAgent {
                         
                 break;
             case "moveSE":
-                switch(Agente.tipoVehiculo){
+                switch(this.tipoVehiculo){
                     case DRON:
                         coord_y = 2;
                         coord_x = 2;
@@ -611,7 +612,7 @@ public class Agente extends SingleAgent {
                 break;
         }
                 
-        if(Agente.sensor.get(coord_y).get(coord_x) == 0)
+        if(this.sensor.get(coord_y).get(coord_x) == 0)
             return true;
         else
             return false;
@@ -644,7 +645,7 @@ public class Agente extends SingleAgent {
 
         int inicio = 0, fin = 0, centro = 0;
         
-        switch(Agente.tipoVehiculo){
+        switch(this.tipoVehiculo){
             case DRON:
                 // El caso del dron es particular y las unicas direcciones que tendra prohibidas son aquellas que
                 // tienen el limite del mundo
@@ -654,7 +655,7 @@ public class Agente extends SingleAgent {
                 for(int i=0; i < 3; i++)
                     for(int j=0; j < 3; j++){
                         
-                        if(Agente.sensor.get(i).get(j)==2)
+                        if(this.sensor.get(i).get(j)==2)
                             posibles_movimientos[aux] = false;
                         
                         aux++;
@@ -679,7 +680,7 @@ public class Agente extends SingleAgent {
             for(int j=inicio; j <= fin; j++){
                 
                 if(i != centro || j != centro){
-                    int lectura = Agente.sensor.get(i).get(j);
+                    int lectura = this.sensor.get(i).get(j);
                 
                     if(lectura == 1 || lectura == 2)
                         posibles_movimientos[aux] = false;
@@ -707,7 +708,7 @@ public class Agente extends SingleAgent {
                 
                 switch(k){
                     case 0:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -723,7 +724,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 1:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -743,7 +744,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 2:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -763,7 +764,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 3:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -783,7 +784,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 4:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -803,7 +804,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 5:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -823,7 +824,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 6:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -843,7 +844,7 @@ public class Agente extends SingleAgent {
                         
                         break;
                     case 7:
-                        switch(Agente.tipoVehiculo){
+                        switch(this.tipoVehiculo){
                             case DRON:
                                 contador = n.nextInt();
                                 break;
@@ -864,7 +865,7 @@ public class Agente extends SingleAgent {
                 
                 for(int i=inicio_y; i <= fin_y; i++)
                     for(int j=inicio_x; j <= fin_x; j++)
-                        if(Agente.sensor.get(i).get(j) == 0)
+                        if(this.sensor.get(i).get(j) == 0)
                             contador++;
                 
                 /* Si el numero de casillas es mayor que el maximo, actualizamos el maximo 
@@ -1052,30 +1053,28 @@ public class Agente extends SingleAgent {
                          
                 );
                 
-              if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inb.getContent());    
-                  this.reply_withID = inb.getReplyWith();
+            switch (inb.getPerformativeInt()) {
+                case ACLMessage.FAILURE:
+                case ACLMessage.NOT_UNDERSTOOD:
+                    System.out.println("Failure: " + inb.getContent());
+                    this.reply_withID = inb.getReplyWith();
                     cancel();
-
-              }else if (inb.getPerformativeInt() == ACLMessage.INFORM){
-
-                  this.conversationID = inb.getConversationId();
-                  this.reply_withID = inb.getReplyWith();
-                  
-                  JSONObject json = new JSONObject(inb.getContent());
-
-                  if(json.has("capabilities")){
-                     JSONObject json2 = new JSONObject(json.get("capabilities").toString());
-                    int fuel= json2.getInt("fuelrate");
-                    inicializarTipoVehiculo(fuel);
-                  } else {
-                      cancel();
-                  }
-                  
-                  
-              }else{
-                  System.out.println("No es de ningun tipo");
-              }
+                    break;
+                case ACLMessage.INFORM:
+                    this.conversationID = inb.getConversationId();
+                    this.reply_withID = inb.getReplyWith();
+                    JSONObject json = new JSONObject(inb.getContent());
+                    if(json.has("capabilities")){
+                        JSONObject json2 = new JSONObject(json.get("capabilities").toString());
+                        int fuel= json2.getInt("fuelrate");
+                        inicializarTipoVehiculo(fuel);
+                    } else {
+                        cancel();
+                    } break;
+                default:
+                    System.out.println("No es de ningun tipo");
+                    break;
+            }
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
           }
@@ -1166,7 +1165,7 @@ public class Agente extends SingleAgent {
                   this.reply_withID = inbox.getReplyWith();
                   
                   // ACTUALIZAMOS LA BATERIA. En este caso es un COCHE, por lo que TRAS CADA MOVIMIENTO, la bateria se reduce en 4 UNIDADES
-                  Agente.battery -= 4;
+                  this.battery -= 4;
               } 
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -1199,19 +1198,20 @@ public class Agente extends SingleAgent {
 
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println("INFORM: " + inbox.getContent()); 
+                  System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
                   this.reply_withID = inbox.getReplyWith();
                   
                   JSONObject json = new JSONObject(inbox.getContent());
                   JSONObject json2 = new JSONObject(json.get("result").toString());
-                  battery = Integer.parseInt(json2.get("battery").toString());
-                  x = Integer.parseInt(json2.get("x").toString());
-                  y = Integer.parseInt(json2.get("y").toString());
+                  this.battery = Integer.parseInt(json2.get("battery").toString());
+                  this.x = Integer.parseInt(json2.get("x").toString());
+                  this.y = Integer.parseInt(json2.get("y").toString());
                   
                   JsonObject objetoSensor = Json.parse(inbox.getContent()).asObject();
                   objetoSensor = objetoSensor.get("result").asObject();
                   JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
                   leerSensor(vectorSensor);
+                  System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y ); 
               } 
           } catch (InterruptedException ex) {
               Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -1289,7 +1289,8 @@ public class Agente extends SingleAgent {
    
 
         setDestinatario(this.nombreLider);
-        outbox.setPerformative(ACLMessage.REQUEST);  
+        outbox.setPerformative(ACLMessage.REQUEST); 
+        outbox.setConversationId("sendKey");
         this.send(outbox);
 
         while (queue.isEmpty()){
@@ -1316,7 +1317,8 @@ public class Agente extends SingleAgent {
     */
       
     private void enviar_clave_lider() {
-        setDestinatario(this.nombreLider);
+        setDestinatario(Agente.nombreLider);
+        outbox.setConversationId("sendKey");
         outbox.setPerformative(ACLMessage.INFORM);  
         outbox.setContent(this.conversationID);
         this.send(outbox);     
@@ -1328,15 +1330,17 @@ public class Agente extends SingleAgent {
     /**
     * @author Dani
     */
-    private void enviar_datos_inicales() {
+     private void enviar_datos_inicales() {
         
         System.out.println("Envio datos Iniciales");
-        setDestinatario(this.nombreLider);
+
+        setDestinatario(Agente.nombreLider);
         outbox.setPerformative(ACLMessage.INFORM);  
         outbox.setContent(this.x + "," + this.y + "," + this.tipoVehiculo);
         outbox.setConversationId("DatosI");
         this.send(outbox);     
-        System.out.println("He enviado los datos iniciales");
+
+        System.out.println("He enviado los datos iniciales " + this.x + "," + this.y + "," + this.tipoVehiculo);
     }
     
     /**
