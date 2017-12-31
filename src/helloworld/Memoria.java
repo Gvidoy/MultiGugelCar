@@ -324,12 +324,19 @@ public class Memoria {
         int conRadarI = 0;
         int conRadarJ = 0;
         
+          for (int i = 0; i < radar.size(); i++) {
+                 System.out.println(radar.get(i));
+
+            }
+        
         int tope = radar.size();
         int ini = tope/2;
+        
         
         //Agrego la nueva informacion a la memoria
         for(int i = MenY - ini ; i < MenY + tope; i++){
             for (int j = MenX - ini ; j < MenX + tope; j++){
+
                 mapa.get(i).set(j,radar.get(conRadarI).get(conRadarJ));
                 conRadarJ++;     
             }
@@ -342,7 +349,6 @@ public class Memoria {
         int idAgente = pos+10;
         
         mapa.get(MenX).set(MenY,idAgente);
-        
         
     
     }
