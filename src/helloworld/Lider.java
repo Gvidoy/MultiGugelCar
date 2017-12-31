@@ -73,13 +73,13 @@ public class Lider extends SingleAgent{
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 30){
+                if (cont== 60){
 
                     cancel();
                     break;
                 }
             }
-            if(cont == 30){
+            if(cont == 60){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
@@ -94,7 +94,7 @@ public class Lider extends SingleAgent{
                     case "solicitarMovimiento":
                         if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
                             System.out.println("Se ha solicitado una peticion de movimiento");
-                            //memoria.verMapaCoche(inbox.getSender().name, 20, 20);
+                        //    memoria.verMapaCoche(inbox.getSender().name, 20, 20);
                             
                             boolean answer = comprobarMovimiento(inbox);
                             outbox = new ACLMessage();
@@ -335,31 +335,37 @@ public class Lider extends SingleAgent{
           String last_move =  partes[0];
           String nombreV =  partes[1];
           String vector = partes[2];
-        //vector.substring(1);
-         vector = vector.replace(",","");
+          vector = vector.replace(",","");
           vector = vector.replace("[","");
           vector = vector.replace("]","");
           vector = vector.replace(" ","");
           char[] vec = vector.toCharArray();
-          System.out.println("Primera fila: " + vector);
-        ArrayList<ArrayList<Integer>>  sensor = new ArrayList<ArrayList<Integer>>();
-        TipoVehiculo tiv = memoria.getTipo(nombreV);
-        int max = 0;
-        switch(tiv){
-            case CAMION: max = 11;break;
-            case COCHE: max = 5;break;
-            case DRON: max = 3;break;
-        }
-        int contador = 0;
-        for(int i = 0; i < max; i++){
-            sensor.add(new ArrayList<Integer>());
-                for (int j = 0; j < max; j++){
-                    sensor.get(i).add((int)(vec[contador]));
-                    contador++;
-                    System.out.println(vec[contador]);
-                }
-                System.out.println("");
-        }
+            System.out.println("Primera fila: " + vector);
+            ArrayList<ArrayList<Integer>>  sensor = new ArrayList<ArrayList<Integer>>();
+            TipoVehiculo tiv = memoria.getTipo(nombreV);
+            int max = 0;
+            switch(tiv){
+                case CAMION: max = 11;break;
+                case COCHE: max = 5;break;
+                case DRON: max = 3;break;
+            }
+            int contador = 0;
+
+            for(int i = 0; i < max; i++){
+                sensor.add(new ArrayList<Integer>());
+                    for (int j = 0; j < max; j++){
+                        int x = vec[contador]-'0';
+                        sensor.get(i).add(x);
+                        contador++;
+                    }
+            }
+          /*  
+            for (int i = 0; i < sensor.size(); i++) {
+                 System.out.println(sensor.get(i));
+
+            }
+           */
+            memoria.actuMapa(last_move, nombreV, sensor);
         
     System.out.println("Tengo memoria");
           
