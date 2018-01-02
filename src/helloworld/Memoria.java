@@ -284,80 +284,35 @@ public class Memoria {
         this.actuPosAgentes(nombreAgente, x,y);
         int MenX = x;
         int MenY = y;
+        int pos = 0;
        
-        /*
-        //Ajusto mi posicion en funcion del movimiento
-        if (movementCommand.equals("moveW") ){
-            MenX--;
-            System.out.println("Voy al Oeste");
-
-        }else if (movementCommand.equals("moveE")){
-            MenX++;
-            System.out.println("Voy al Este");    
-
-        }else if (movementCommand.equals("moveN")){
-            MenY--;
-            System.out.println("Voy al Norte");    
-
-        }else if (movementCommand.equals("moveS")){
-            MenY++;
-            System.out.println("Voy al Sur");    
-        
-        }else if (movementCommand.equals("moveNW")){
-            MenX--;
-            MenY--;
-            System.out.println("Voy al NorOeste");    
-        
-        }else if (movementCommand.equals("moveNE")){
-            MenX++;
-            MenY--;
-            System.out.println("Voy al NorEste");    
-        
-        }else if (movementCommand.equals("moveSW")){
-            MenX--;
-            MenY++;
-            System.out.println("Voy al NorOeste");    
-        
-        }else if (movementCommand.equals("moveSE")){
-            MenX++;
-            MenY++;
-            System.out.println("Voy al NorOeste");    
-        } 
-        */
-        //Grabamos en memoria la posición reajustada del cliente
-        //Pair posicionAgente = new Pair(MenX,MenY);
-        //this.posicionesAgentes.set(agente, posicionAgente);
-        //this.equipo.get(pos).setX(MenX);
-        //this.equipo.get(pos).setY(MenY);
-
-        
+        pos = buscarVehiculo(nombreAgente);
+                
         //Contadores para la matriz del radar
         int conRadarI = 0;
         int conRadarJ = 0;
-        
-          for (int i = 0; i < radar.size(); i++) {
-                 System.out.println(radar.get(i));
-
-            }
+       
         
         int tope = radar.size();
         int ini = tope/2;
         
         
         //Agrego la nueva informacion a la memoria
-        for(int i = MenY - ini ; i < MenY + tope; i++){
-            for (int j = MenX - ini ; j < MenX + tope; j++){
-
-                mapa.get(i).set(j,radar.get(conRadarI).get(conRadarJ));
-                conRadarJ++;     
+        for(int i = MenY - ini ; i < MenY + ini; i++){
+            for (int j = MenX - ini ; j < MenX + ini; j++){
+                    if(i>=0 && j>=0){
+                        mapa.get(i).set(j,radar.get(conRadarI).get(conRadarJ));
+                    }
+                conRadarJ++; 
+                
             }
             System.out.println();
             conRadarI++;
             conRadarJ = 0;     
         }
-        
+        System.out.println("He actualizado el mapa");
         //El id del agente en el mapa es el agente +10
-        int idAgente = pos+10;
+        int idAgente = 8;
         
         mapa.get(MenX).set(MenY,idAgente);
         
@@ -406,8 +361,8 @@ public class Memoria {
         
        
         //Muestro los datos del centro pasado por parametro
-        for(int i = y - l/2 ; i < L; i++){
-            for (int j = x - a/2; j < A; j++){
+        for(int i = y - (l/2) ; i < L; i++){
+            for (int j = x - (a/2); j < A; j++){
                 System.out.print(mapa.get(i).get(j));
             }
             System.out.println();
@@ -436,10 +391,16 @@ public class Memoria {
         
        
         //Muestro los datos del centro pasado por parametro
-        for(int i = y - l/2 ; i < L; i++){
-            for (int j = x - a/2; j < A; j++){
-                System.out.print(mapa.get(i).get(j));
+        for(int i = y - (l/2) ; i < L; i++){
+            
+            for (int j = x -(a/2); j < A; j++){
+                if(i>=0 && j>=0){
+                    System.out.print(mapa.get(i).get(j));
+                }else{
+                    System.out.print("2");
+                }
             }
+            
             System.out.println();
         }
 

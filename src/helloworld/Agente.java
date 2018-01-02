@@ -31,7 +31,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    private static String nombreLider = "Lidlll6";
+    private static String nombreLider = "Lider123";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
@@ -1224,7 +1224,7 @@ public class Agente extends SingleAgent {
 
                         setDestinatario(Agente.nombreLider);
                         outbox.setPerformative(ACLMessage.INFORM);  
-                        outbox.setContent(this.last_move + "-" + this.getName() + "-" + this.sensor);
+                        outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor);
                         outbox.setConversationId("DatosSensor");
                         this.send(outbox);
                         while (queue.isEmpty()){Thread.sleep(1);};
@@ -1318,6 +1318,7 @@ public class Agente extends SingleAgent {
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.REQUEST); 
         outbox.setConversationId("sendKey");
+        
         this.send(outbox);
 
         while (queue.isEmpty()){
