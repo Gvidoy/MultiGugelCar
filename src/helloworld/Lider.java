@@ -352,7 +352,7 @@ public class Lider extends SingleAgent{
           vector = vector.replace("]","");
           vector = vector.replace(" ","");
           char[] vec = vector.toCharArray();
-            System.out.println("Primera fila: " + vector);
+       //     System.out.println("Primera fila: " + vector);
             ArrayList<ArrayList<Integer>>  sensor = new ArrayList<ArrayList<Integer>>();
             TipoVehiculo tiv = memoria.getTipo(nombreV);
             int max = 0;
@@ -371,12 +371,12 @@ public class Lider extends SingleAgent{
                         contador++;
                     }
             }
-          
+     /*     
             for (int i = 0; i < sensor.size(); i++) {
                  System.out.println(sensor.get(i));
 
             }
-           
+  **/         
             memoria.actuMapa(nombreV, px, py, sensor);
         
     System.out.println("Tengo memoria");

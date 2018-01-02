@@ -312,10 +312,18 @@ public class Memoria {
         }
         System.out.println("He actualizado el mapa");
         //El id del agente en el mapa es el agente +10
-        int idAgente = 8;
+        //int idAgente = 8;
         
-        mapa.get(MenX).set(MenY,idAgente);
-        
+        //mapa.get(MenX).set(MenY,idAgente);
+   /*   
+        for(int i = 0; i < equipo.size(); i++ ){
+            if(equipo.get(i).getY() >= (MenY - ini ) && equipo.get(i).getY() <= (MenY + ini ) ){
+                if(equipo.get(i).getX() >= (MenX - ini ) && equipo.get(i).getX() <= (MenX + ini ) ){
+                    mapa.get(equipo.get(i).getX()).set(equipo.get(i).getY(), i+10);
+            }
+            }
+        }
+        */
     
     }
     
@@ -395,9 +403,10 @@ public class Memoria {
             
             for (int j = x -(a/2); j < A; j++){
                 if(i>=0 && j>=0){
-                    System.out.print(mapa.get(i).get(j));
+                    System.out.printf("%3d" ,mapa.get(i).get(j));
+   
                 }else{
-                    System.out.print("2");
+                        System.out.printf("%3d" ,2);
                 }
             }
             
