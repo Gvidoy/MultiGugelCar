@@ -69,22 +69,23 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(500); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(100); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 60){
+                if (cont== 100){
 
                     cancel();
                     break;
                 }
             }
-            if(cont == 60){
+            if(cont == 100){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
             // los que haya
             try {
+                cont = 0;
                 ACLMessage inbox = queue.Pop();
                 System.out.println("\n["+this.getName()+"] Procesando: "+inbox.getPerformative() + " De " + inbox.getSender().name + " ID " + inbox.getConversationId() );
                 switch(inbox.getConversationId()){
@@ -94,7 +95,7 @@ public class Lider extends SingleAgent{
                     case "solicitarMovimiento":
                         if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
                             System.out.println("Se ha solicitado una peticion de movimiento");
-                        //    memoria.verMapaCoche(inbox.getSender().name, 20, 20);
+                            memoria.verMapaCoche(inbox.getSender().name, 20, 20);
                             
                             boolean answer = comprobarMovimiento(inbox);
                             outbox = new ACLMessage();
@@ -113,8 +114,11 @@ public class Lider extends SingleAgent{
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
+                    case "sendKey":
+                         sendConversationID(inbox);
+                        break;
                     case "DatosSensor":
-                       //actualizarMapaLider(inbox);
+                       actualizarMapaLider(inbox);
                        
                        outbox = new ACLMessage();
                        outbox.setSender(this.getAid());
@@ -124,11 +128,11 @@ public class Lider extends SingleAgent{
                        
                     default:
                         break;
+                        
                 }
                  
-                if(inbox.getPerformativeInt() == ACLMessage.REQUEST || inbox.getPerformativeInt() == ACLMessage.INFORM)
-                    sendConversationID(inbox);
-
+           //     if(inbox.getPerformativeInt() == ACLMessage.REQUEST || inbox.getPerformativeInt() == ACLMessage.INFORM)
+           //         sendConversationID(inbox);
 
             }
             catch (InterruptedException ex) {
@@ -339,15 +343,16 @@ public class Lider extends SingleAgent{
         String mensaje = inbox.getContent();
           
           String[] partes = mensaje.split("-");
-          String last_move =  partes[0];
-          String nombreV =  partes[1];
-          String vector = partes[2];
+          int px =  Integer.parseInt(partes[0]);
+          int py = Integer.parseInt(partes[1]);
+          String nombreV =  partes[2];
+          String vector = partes[3];
           vector = vector.replace(",","");
           vector = vector.replace("[","");
           vector = vector.replace("]","");
           vector = vector.replace(" ","");
           char[] vec = vector.toCharArray();
-            System.out.println("Primera fila: " + vector);
+       //     System.out.println("Primera fila: " + vector);
             ArrayList<ArrayList<Integer>>  sensor = new ArrayList<ArrayList<Integer>>();
             TipoVehiculo tiv = memoria.getTipo(nombreV);
             int max = 0;
@@ -366,13 +371,13 @@ public class Lider extends SingleAgent{
                         contador++;
                     }
             }
-          /*  
+     /*     
             for (int i = 0; i < sensor.size(); i++) {
                  System.out.println(sensor.get(i));
 
             }
-           */
-            memoria.actuMapa(last_move, nombreV, sensor);
+  **/         
+            memoria.actuMapa(nombreV, px, py, sensor);
         
     System.out.println("Tengo memoria");
           

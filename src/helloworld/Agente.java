@@ -31,7 +31,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    private static String nombreLider = "Lidlll6";
+    private static String nombreLider = "Lider123";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
@@ -56,6 +56,7 @@ public class Agente extends SingleAgent {
     private int coord_y_objetivo;
     private int num_pasos;
     private int indice_ultima_direccion;
+    private int contador;
     
     private boolean objetivo_encontrado;
     
@@ -88,14 +89,14 @@ public class Agente extends SingleAgent {
         this.coord_y_objetivo = 0;
         this.num_pasos = 0;
         this.indice_ultima_direccion = 0;
-        
+        this.contador=0;
         this.objetivo_encontrado = false;
     }
    
     //public void init();
     @Override
     public void execute(){
-   
+     if(contador < 250){
         try {
        
            System.out.println("voy a ver si hay clave " + " - " + this.getName());
@@ -104,24 +105,31 @@ public class Agente extends SingleAgent {
             System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
             subscribe();
         }
-            
+          
             checkin();
             
             doQuery_ref();
 
+           
             Thread.sleep(3000);
             enviar_datos_inicales();
             System.out.println("-------------Procedemos a buscar el objetivo--------------------");
-            while(!this.objetivo_encontrado){
+           while(contador < 250){
+            //while(!this.objetivo_encontrado){
                 this.buscarObjetivo();
                 this.doQuery_ref();
-            }        
+                  contador++;
+                  System.out.println("----------------iteraciones: " + contador);
+            }      
+         
+         
             System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
         } catch (InterruptedException | JSONException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
 
         }
+     }
        
 }
     
@@ -1224,7 +1232,7 @@ public class Agente extends SingleAgent {
 
                         setDestinatario(Agente.nombreLider);
                         outbox.setPerformative(ACLMessage.INFORM);  
-                        outbox.setContent(this.last_move + "-" + this.getName() + "-" + this.sensor);
+                        outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor);
                         outbox.setConversationId("DatosSensor");
                         this.send(outbox);
                         while (queue.isEmpty()){Thread.sleep(1);};
@@ -1318,6 +1326,7 @@ public class Agente extends SingleAgent {
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.REQUEST); 
         outbox.setConversationId("sendKey");
+        
         this.send(outbox);
 
         while (queue.isEmpty()){
