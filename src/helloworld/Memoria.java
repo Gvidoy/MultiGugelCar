@@ -29,7 +29,8 @@ public class Memoria {
     
     /**
     * @author Grego
-    * Si se usa este constructor hay que inicializar manualmente la posición de los agentes y el tipo
+    * Constructor por defecto
+    * hay que que anadir los agentes despues de inicializar
     */
     
     Memoria(){
@@ -60,6 +61,15 @@ public class Memoria {
     }
     System.out.println("Tengo memoria");
     }
+    
+    /*
+    * @author grego
+    * Crea y anade un vehiculo a la memoria
+    * @param x {Pos x agente}
+    * @param y {Pos y agente}
+    * @param nombre {nombre agente}
+    * @param tipo {Tipo de vehiculo}
+    */
   
     public void addVehiculo(int x, int y, String Nombre,TipoVehiculo tipo){
 
@@ -116,7 +126,7 @@ public class Memoria {
     /**
     * @author grego
     * Función para  ir actualizando la posición de cada agente, llamar justo despues del movimiento
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @param {nueva posición del agente x}
     * @param {nueva posición del agente y}
     */
@@ -134,7 +144,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al norte del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getN(String nombreAgente){
@@ -150,7 +160,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al sur del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getS(String nombreAgente){
@@ -164,7 +174,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al este del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getE(String nombreAgente){
@@ -179,7 +189,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al oeste del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getW(String nombreAgente){
@@ -192,7 +202,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al norEste del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getNE(String nombreAgente){
@@ -207,7 +217,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al norOeste del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getNW(String nombreAgente){
@@ -222,7 +232,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al surEste del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getSE(String nombreAgente){
@@ -237,7 +247,7 @@ public class Memoria {
     /*
     * @author grego
     * Consulta lo que hay al surOeste del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {lo que hay en esa posicion int}
     */
     public int getSW(String nombreAgente){
@@ -252,7 +262,7 @@ public class Memoria {
     /*
     * @author grego
     * obtiene el tipo del agente
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @return {tipo de agente}
     */
     public TipoVehiculo getTipo(String nombreAgente){
@@ -264,7 +274,7 @@ public class Memoria {
     * @author grego
     * actualiza el mapa
     * @param {movimiento a realizar} 
-    * @param {numero de agente Agente}
+    * @param {nombre de agente Agente}
     * @param {percepcion del agente} 
     */
     
