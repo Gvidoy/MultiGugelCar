@@ -298,8 +298,8 @@ public class Memoria {
         
         
         //Agrego la nueva informacion a la memoria
-        for(int i = MenY - ini ; i < MenY + ini; i++){
-            for (int j = MenX - ini ; j < MenX + ini; j++){
+        for(int i = MenY - ini ; i <= MenY + ini; i++){
+            for (int j = MenX - ini ; j <= MenX + ini; j++){
                     if(i>=0 && j>=0){
                         mapa.get(i).set(j,radar.get(conRadarI).get(conRadarJ));
                     }
@@ -334,17 +334,11 @@ public class Memoria {
     * @param a {Ancho ncasillar} 
     * @param l {Alto ncasillas}
     */
-    public void verMapaCentro(int a, int l){
+    public void verMapaCentro(){
      
-     
-        //Delimito el centro
-        int L = l/2 + 500;
-        int A = a/2 + 500;   
-        
-       
         //Muestro los datos del centro de la memoria
-        for(int i = 500 - l/2 ; i < L; i++){
-            for (int j = 500 - a/2; j < A; j++){
+        for(int i = 0 ; i < mapa.size(); i++){
+            for (int j = 0; j < mapa.get(i).size(); j++){
                 System.out.print(mapa.get(i).get(j));
             }
             System.out.println();
@@ -405,14 +399,13 @@ public class Memoria {
                 if(i>=0 && j>=0){
                     System.out.printf("%3d" ,mapa.get(i).get(j));
    
-                }else{
+                }/*else{
                         System.out.printf("%3d" ,2);
-                }
+                }*/
             }
             
             System.out.println();
         }
-
     }
     
     /**
