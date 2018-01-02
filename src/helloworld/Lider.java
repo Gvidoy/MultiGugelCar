@@ -69,7 +69,7 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(400); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(500); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -114,7 +114,14 @@ public class Lider extends SingleAgent{
                         guardarCoordenadas(inbox);
                         break;
                     case "DatosSensor":
-                       actualizarMapaLider(inbox);
+                       //actualizarMapaLider(inbox);
+                       
+                       outbox = new ACLMessage();
+                       outbox.setSender(this.getAid());
+                       outbox.setPerformative(ACLMessage.INFORM);
+                       outbox.setReceiver(inbox.getSender());      
+                       this.send(outbox);
+                       
                     default:
                         break;
                 }
