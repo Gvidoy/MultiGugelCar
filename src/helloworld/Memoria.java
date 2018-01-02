@@ -278,13 +278,14 @@ public class Memoria {
     * @param {percepcion del agente} 
     */
     
-    public void actuMapa(String movementCommand, String nombreAgente, ArrayList<ArrayList<Integer>> radar){
+    public void actuMapa(String nombreAgente,int x, int y, ArrayList<ArrayList<Integer>> radar){
         
-        int pos = this.buscarVehiculo(nombreAgente);
-        int MenX = this.equipo.get(pos).getX();
-        int MenY = this.equipo.get(pos).getY();
+        //int pos = this.buscarVehiculo(nombreAgente);
+        this.actuPosAgentes(nombreAgente, x,y);
+        int MenX = x;
+        int MenY = y;
        
-        
+        /*
         //Ajusto mi posicion en funcion del movimiento
         if (movementCommand.equals("moveW") ){
             MenX--;
@@ -322,12 +323,12 @@ public class Memoria {
             MenY++;
             System.out.println("Voy al NorOeste");    
         } 
-        
+        */
         //Grabamos en memoria la posición reajustada del cliente
         //Pair posicionAgente = new Pair(MenX,MenY);
         //this.posicionesAgentes.set(agente, posicionAgente);
-        this.equipo.get(pos).setX(MenX);
-        this.equipo.get(pos).setY(MenY);
+        //this.equipo.get(pos).setX(MenX);
+        //this.equipo.get(pos).setY(MenY);
 
         
         //Contadores para la matriz del radar
