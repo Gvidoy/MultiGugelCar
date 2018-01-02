@@ -73,13 +73,12 @@ public class Lider extends SingleAgent{
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 100){
-
+                if (cont== 300){
                     cancel();
                     break;
                 }
             }
-            if(cont == 100){
+            if(cont == 300){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
