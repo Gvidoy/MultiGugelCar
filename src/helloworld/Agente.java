@@ -32,6 +32,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
+    public static final String MAPA = "map6";
     private static String nombreLider = "Lider45";
     private ACLMessage outbox;
     private String conversationID;
@@ -1000,7 +1001,7 @@ public class Agente extends SingleAgent {
         JSONObject jsonLogin = new JSONObject();
         
         try {
-            jsonLogin.put("world", "map1");
+            jsonLogin.put("world", MAPA);
             
         } catch (JSONException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -1622,7 +1623,8 @@ public class Agente extends SingleAgent {
                     if(i != centro || j != centro){
                         int lectura = this.sensor.get(i).get(j);
                 
-                        if(lectura == 1 || lectura == 2)
+                        if((lectura == 1 && (this.tipoVehiculo == TipoVehiculo.COCHE 
+                                || this.tipoVehiculo == TipoVehiculo.CAMION))  || lectura == 2)
                             posibles_movimientos[aux] = false;
                 
                         aux++;

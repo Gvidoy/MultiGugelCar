@@ -27,6 +27,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
+    private final int limiteIDLE = 80; 
     private int agentCount;
     private String conversationID;
     private ACLMessage outbox;
@@ -73,12 +74,12 @@ public class Lider extends SingleAgent{
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont==100){
+                if (cont==limiteIDLE){
                     cancel();
                     break;
                 }
             }
-            if(cont == 100){
+            if(cont == limiteIDLE){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
