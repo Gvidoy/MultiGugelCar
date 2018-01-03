@@ -69,16 +69,16 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(100); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 300){
+                if (cont==100){
                     cancel();
                     break;
                 }
             }
-            if(cont == 300){
+            if(cont == 100){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos

@@ -20,9 +20,9 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "agentee";
+    public static final String NOMBRE_AGENTE = "agente45";
   
-    public static final String MAPA = "map1";
+    public static final String MAPA = "map2";
     /**
      * @param args the command line arguments
      */
