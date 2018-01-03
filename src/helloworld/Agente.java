@@ -32,6 +32,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
+    public static final String MAPA = "map6";
     private static String nombreLider = "Lider45";
     private ACLMessage outbox;
     private String conversationID;
@@ -101,12 +102,12 @@ public class Agente extends SingleAgent {
      
         try {
        
-           System.out.println("voy a ver si hay clave " + " - " + this.getName());
-        if(!askForConversationID()){
-            Thread.sleep(3000);
-            System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
+           //System.out.println("voy a ver si hay clave " + " - " + this.getName());
+        //if(!askForConversationID()){
+            //Thread.sleep(3000);
+            //System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
             subscribe();
-        }
+        //}
           
             checkin();
             
@@ -158,9 +159,9 @@ public class Agente extends SingleAgent {
     */
     private void obtenerCoordenadasObjetivo() {
         
-        int aux = 0;
-        int x = 0; 
-        int y = 0; 
+        int centro = 0;
+        int x_local = this.coord_x_objetivo;
+        int y_local = this.coord_y_objetivo;
         
         // En primer lugar debemos distinguir el tipo de vehiculo que ha encontrado el objetivo
         switch(this.tipoVehiculo){
@@ -168,84 +169,53 @@ public class Agente extends SingleAgent {
             // En segundo lugar, usamos una variable auxiliar que varia dependiendo del vehiculo que ha encontrado el objetivo.
             // Esta variable nos ayudara a establecer las coordenadas correctas.
             case DRON:
-                aux = 1;
+                centro = 1;
                 break;
             case COCHE:
-                aux = 2;
+                centro = 2;
                 break;
             case CAMION:
-                aux = 5;
+                centro = 5;
                 break;
         }
-        
-        int dif_x = Math.abs(this.coord_x_objetivo - aux); 
-        int dif_y = Math.abs(this.coord_y_objetivo - aux);
 
-        
-        if(this.x < this.coord_x_objetivo){
-            
-            // Estamos a la IZQ del objetivo
-            if(this.y < this.coord_y_objetivo){
-                // Estamos ENCIMA del objetivo. Nos movemos hacia el SE
-                this.coord_x_objetivo = this.x + dif_x;
-                this.coord_y_objetivo = this.y + dif_y;
-            } else if(this.y > this.coord_y_objetivo){
-                // Estamos DEBAJO del objetivo. Nos movemos hacia el NE
-                this.coord_x_objetivo = this.x + dif_x;
-                this.coord_y_objetivo = this.y - dif_y;
-            } else {
-                // Estamos en la misma fila que el objetivo. Nos movemos hacia el E
-                this.coord_x_objetivo = this.x + dif_x;
-                this.coord_y_objetivo = this.y;
+        if(this.coord_x_objetivo < centro){
+            if(this.coord_y_objetivo < centro){
+                // EL OBJETIVO SE ENCUENTRA EN EL PRIMER CUADRANTE
+                System.out.println("El objetivo se encuentra en el PRIMER CUADRANTE");
+                this.coord_x_objetivo = this.x - centro + x_local;
+                this.coord_y_objetivo = this.y - centro + y_local;
+            } else if(this.coord_y_objetivo > centro){
+                // EL OBJETIVO SE ENCUENTRA EN EL TERCER CUADRANTE
+                System.out.println("El objetivo se encuentra en el TERCER CUADRANTE");
+                this.coord_x_objetivo = this.x - centro + x_local;
+                this.coord_y_objetivo = this.y - centro + y_local;
             }
-        } else if(this.x > this.coord_x_objetivo){
-            
-            // Estamos a la DER del objetivo.
-            if(this.y < this.coord_y_objetivo){
-                // Estamos ENCIMA del objetivo. Nos movemos hacia el SW
-                this.coord_x_objetivo = this.x - dif_x;
-                this.coord_y_objetivo = this.y + dif_y;
-            } else if(this.y > this.coord_y_objetivo){
-                // Estamos DEBAJO del objetivo. Nos movemos hacia el NW
-                this.coord_x_objetivo = this.x - dif_x;
-                this.coord_y_objetivo = this.y - dif_y;
-            } else {
-                // Estamos en la misma fila que el objetivo. Nos movemos hacia el W
-                this.coord_x_objetivo = this.x - dif_x;
-                this.coord_y_objetivo = this.y;
+        } else if(this.coord_x_objetivo > centro){
+            if(this.coord_y_objetivo < this.y){
+                // EL OBJETIVO SE ENCUENTRA EN EL SEGUNDO CUADRANTE
+                System.out.println("El objetivo se encuentra en el SEGUNDO CUADRANTE");
+                this.coord_x_objetivo = this.x - centro + x_local;
+                this.coord_y_objetivo = this.y - centro + y_local;
+            } else if(this.coord_y_objetivo > centro){
+                // EL OBJETIVO SE ENCUENTRA EN EL CUARTO CUADRANTE
+                System.out.println("El objetivo se encuentra en el CUARTO CUADRANTE");
+                this.coord_x_objetivo = this.x - centro + x_local;
+                this.coord_y_objetivo = this.y - centro + y_local;
             }
-        } else {
-            
-            // Estamos en la MISMA COLUMNA que el objetivo.
-            if(this.y < this.coord_y_objetivo){
-                // Estamos POOOOOOR ENCIMA del objetivo. Nos movemos hacia el S
-                this.coord_x_objetivo = this.x;
-                this.coord_y_objetivo = this.y + dif_y;
-            } else if(this.y > this.coord_y_objetivo){
-                // Estamos DEBAJO del objetivo. Nos movemos hacia el N
-                this.coord_x_objetivo = this.x;
-                this.coord_y_objetivo = this.y + dif_y;
-            } else {
-                this.enObjetivo = true;
-                System.out.println("En objetivoo!!!!!");
-            }
+        } else if(this.coord_x_objetivo == centro){
+            // EL OBJETIVO SE ENCUENTRA EN LA MISMA COLUMNA QUE EL VEHICULO
+            System.out.println("El objetivo se encuentra en LA MISMA COLUMNA QUE EL VEHICULO");
+            this.coord_x_objetivo = this.x;
+            this.coord_y_objetivo = this.y - centro + y_local;
         }
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        // Obtenemos la coordenada 'x' del objetivo en valores absolutos
-        this.coord_x_objetivo = this.x-aux+this.coord_x_objetivo;
-        
-        // Hacemos lo mismo con la coordenada 'y'
-        this.coord_y_objetivo = this.y-aux+this.coord_y_objetivo;
+        if(this.coord_y_objetivo == centro){
+            // EL OBJETIVO SE ENCUENTRA EN LA MISMA FILA QUE EL VEHICULO
+            System.out.println("El objetivo se encuentra en LA MISMA FILA QUE EL VEHICULO");
+            this.coord_x_objetivo = this.x - centro + x_local;
+            this.coord_y_objetivo = this.y;
+        }
         
     }
     
@@ -257,8 +227,8 @@ public class Agente extends SingleAgent {
         boolean encontrado = false;
         
         // Recorremos todo el radar del agente, hasta terminar o encontrar el objetivo
-        for(int i=0; i < this.range && !encontrado; i++){
-            for(int j=0; j < this.range && !encontrado; j++){
+        for(int i = 0; i < this.range && !encontrado; i++){
+            for(int j = 0; j < this.range && !encontrado; j++){
                 if(sensor.get(i).get(j) == 3){
                     // Una vez encontrado el objetivo, guardamos las coordenadas 'x' e 'y' del mismo
                     encontrado = true;
@@ -1031,7 +1001,7 @@ public class Agente extends SingleAgent {
         JSONObject jsonLogin = new JSONObject();
         
         try {
-            jsonLogin.put("world", "map1");
+            jsonLogin.put("world", MAPA);
             
         } catch (JSONException ex) {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
@@ -1561,14 +1531,14 @@ public class Agente extends SingleAgent {
 
     private void nuevaLogica() throws InterruptedException {
         
-        String next_move = "";
+        String next_move;
 	
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
 	if(this.battery <= 10)
             try {
                 this.refuel();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
 
 	// En primer lugar, comprobamos si el objetivo se encuentra al alcance para actuar de una manera u otra.
@@ -1576,9 +1546,15 @@ public class Agente extends SingleAgent {
 
         if(this.objetivo_encontrado){
             
+            System.out.println("OBJETIVO ENCONTRADO!!!");
+            
+            System.out.println("Las coordenadas locales del objetivo son: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ")");
+            
             // TRANSFORMAR LAS COORDENADAS DEL OBJETIVO EN VALORES ABSOLUTOS
-            if(this.coord_x_objetivo == 0 && this.coord_y_objetivo == 0)
-                obtenerCoordenadasObjetivo();
+            System.out.println("Transformando las coordenadas del objetivo...");
+            obtenerCoordenadasObjetivo();
+                       
+            System.out.println("Las coordenadas absolutas del objetivo son: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ")");
             
             // Notificamos al lider que hemos encontrado el objetivo y nos dirigimos hacia el
 
@@ -1603,117 +1579,98 @@ public class Agente extends SingleAgent {
             // el limite del mundo, pondremos en la posicion del vector de dicha direccion a 'false'.
             // Dependiendo de cual sea el vehiculo, recorremos unas posiciones u otras
 
-        int inicio = 0, fin = 0, centro = 0;
+            int inicio = 0, fin = 0, centro = 0;
         
-        switch(this.tipoVehiculo){
-            case DRON:
-                // El caso del dron es particular y las unicas direcciones que tendra prohibidas son aquellas que
-                // tienen el limite del mundo
+            switch(this.tipoVehiculo){
+                case DRON:
+                    // El caso del dron es particular y las unicas direcciones que tendra prohibidas son aquellas que
+                    // tienen el limite del mundo
+                    //
+                    //int aux = 0;
+                    //
+                    //for(int i=0; i < 3; i++){
+                    //    for(int j=0; j < 3; j++){
+                    //    
+                    //        if(this.sensor.get(i).get(j)==2){
+                    //            posibles_movimientos[aux] = false;
+                    //        }
+                    //    
+                    //        aux++;
+                    //    }
+                    //}
+                    //
+                    inicio = 0;
+                    fin = 2;
+                    centro = 1;
+                    break;
+                case COCHE:
+                    inicio = 1;
+                    fin = 3;
+                    centro = 2;
+                    break;
+                case CAMION:
+                    inicio = 4;
+                    fin = 6;
+                    centro = 5;
+                    break;
+            }
+            
+            int aux = 0;
+        
+            for(int i = inicio; i <= fin; i++){
+                for(int j = inicio; j <= fin; j++){
                 
-                int aux = 0;
+                    if(i != centro || j != centro){
+                        int lectura = this.sensor.get(i).get(j);
                 
-                for(int i=0; i < 3; i++){
-                    for(int j=0; j < 3; j++){
-                        
-                        if(this.sensor.get(i).get(j)==2){
+                        if((lectura == 1 && (this.tipoVehiculo == TipoVehiculo.COCHE 
+                                || this.tipoVehiculo == TipoVehiculo.CAMION))  || lectura == 2)
                             posibles_movimientos[aux] = false;
-                        }
-                        
+                
                         aux++;
                     }
                 }
-                
-                break;
-            case COCHE:
-                inicio = 1;
-                fin = 3;
-                centro = 2;
-                break;
-            case CAMION:
-                inicio = 4;
-                fin = 6;
-                centro = 5;
-                break;
-        }
+            }
         
-        int aux = 0;
+            // Ya tenemos los posibles movimientos
         
-        for(int i=inicio; i <= fin; i++){
-            for(int j=inicio; j <= fin; j++){
-                
-                if(i != centro || j != centro){
-                    int lectura = this.sensor.get(i).get(j);
-                
-                    if(lectura == 1 || lectura == 2)
-                        posibles_movimientos[aux] = false;
-                
-                    aux++;
+            if(this.indice_ultima_direccion != null && posibles_movimientos[this.indice_ultima_direccion]){
+                next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
+            } else {
+            
+                if(this.indice_ultima_direccion != null){
+                    posibles_movimientos[7-this.indice_ultima_direccion] = false;
                 }
-            }
-        }
-        
-        // Ya tenemos los posibles movimientos
-        
-        if(this.indice_ultima_direccion != null && posibles_movimientos[this.indice_ultima_direccion]){
-            next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
-        } else {
             
-            if(this.indice_ultima_direccion != null){
-                posibles_movimientos[7-this.indice_ultima_direccion] = false;
-            }
-            
-            Integer indice_direccion = null;
-            boolean encontrado = false;
+                Integer indice_direccion = null;
+                boolean encontrado = false;
         
-            for (int i=0; i < posibles_movimientos.length && !encontrado; i++){
-                if(posibles_movimientos[i] == true){
-                    encontrado = true;
-                    indice_direccion = i;
+                for (int i=0; i < posibles_movimientos.length && !encontrado; i++){
+                    if(posibles_movimientos[i] == true){
+                        encontrado = true;
+                        indice_direccion = i;
+                    }
                 }
-            }
         
-            next_move = traducirIndiceDireccion(indice_direccion);
-            this.indice_ultima_direccion = indice_direccion;
+                next_move = traducirIndiceDireccion(indice_direccion);
+                this.indice_ultima_direccion = indice_direccion;
+            }
         }
         
-        
-        
-        //Long seed = System.nanoTime(); 
-        //Collections.shuffle(direcciones, new Random(seed));
-
-        //int indice_direccion = direcciones.get(0);
-        //next_move = traducirIndiceDireccion(indice_direccion);
-        
-        //this.indice_ultima_direccion = indice_direccion;
-
-//                try {
-//                // Mientras que el lider no nos deje ir en una direccion le seguiremos preguntando. En el momento en el que nos deje ir, iremos.
-//                while(!askLider(next_move)){
-//                    direcciones.remove(0);
-//
-//                    indice_direccion = direcciones.get(0);
-//                    next_move = traducirIndiceDireccion(indice_direccion);
-//                }
-            
+        System.out.println("La direccion escogida es: " + next_move);
         this.performMove(next_move);
-            
-
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-            
-        }
     }
 
     private int irHaciaObjetivo() {
         
         
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
-	if(this.battery <= 10)
+	if(this.battery <= 10){
             try {
                 this.refuel();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         if(this.x < this.coord_x_objetivo){
@@ -1721,12 +1678,15 @@ public class Agente extends SingleAgent {
             // Estamos a la IZQ del objetivo
             if(this.y < this.coord_y_objetivo){
                 // Estamos ENCIMA del objetivo. Nos movemos hacia el SE
+                System.out.println("La direccion escogida es SE");
                 return 7;
             } else if(this.y > this.coord_y_objetivo){
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el NE
+                System.out.println("La direccion escogida es NE");
                 return 2;
             } else {
                 // Estamos en la misma fila que el objetivo. Nos movemos hacia el E
+                System.out.println("La direccion escogida es E");
                 return 4;
             }
         } else if(this.x > this.coord_x_objetivo){
@@ -1734,12 +1694,15 @@ public class Agente extends SingleAgent {
             // Estamos a la DER del objetivo.
             if(this.y < this.coord_y_objetivo){
                 // Estamos ENCIMA del objetivo. Nos movemos hacia el SW
+                System.out.println("La direccion escogida es SW");
                 return 5;
             } else if(this.y > this.coord_y_objetivo){
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el NW
+                System.out.println("La direccion escogida es NW");
                 return 0;
             } else {
                 // Estamos en la misma fila que el objetivo. Nos movemos hacia el W
+                System.out.println("La direccion escogida es W");
                 return 3;
             }
         } else {
@@ -1747,25 +1710,17 @@ public class Agente extends SingleAgent {
             // Estamos en la MISMA COLUMNA que el objetivo.
             if(this.y < this.coord_y_objetivo){
                 // Estamos POOOOOOR ENCIMA del objetivo. Nos movemos hacia el S
+                System.out.println("La direccion escogida es S");
                 return 6;
             } else if(this.y > this.coord_y_objetivo){
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el N
+                System.out.println("La direccion escogida es N");
                 return 1;
             } else {
                 this.enObjetivo = true;
                 System.out.println("En objetivoo!!!!!");
             }
         }
-        
-        /*if(this.coord_x_objetivo < this.x){
-            return 3;
-        }else if(this.coord_x_objetivo > this.x){
-            return 4;
-        }else if(this.coord_y_objetivo > this.y){
-            return 6;
-        }else if(this.coord_y_objetivo < this.y){
-            return 1;
-        }*/
         
         return -1;
     }

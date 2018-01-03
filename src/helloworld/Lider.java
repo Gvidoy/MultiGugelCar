@@ -27,6 +27,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
+    private final int limiteIDLE = 80; 
     private int agentCount;
     private String conversationID;
     private ACLMessage outbox;
@@ -69,16 +70,16 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(100); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont== 300){
+                if (cont==limiteIDLE){
                     cancel();
                     break;
                 }
             }
-            if(cont == 300){
+            if(cont == limiteIDLE){
                 break;
             }
             // En cuanto la cola tiene al menos un mensaje, se extraen todos

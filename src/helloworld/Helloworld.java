@@ -20,9 +20,8 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "agentee";
-  
-    public static final String MAPA = "map1";
+    public static final String NOMBRE_AGENTE = "agente456";
+    private static String nombreLider = "Lider45";
     /**
      * @param args the command line arguments
      */
@@ -34,7 +33,7 @@ public class Helloworld {
        
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
         try {
-            lidl = new Lider(new AgentID("Lider45"));
+            lidl = new Lider(new AgentID(nombreLider));
             lidl.start();
 
             a = new Agente(new AgentID(NOMBRE_AGENTE));
