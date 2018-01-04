@@ -152,7 +152,7 @@ public class Agente extends SingleAgent {
                 Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
 
             }
-            System.out.println("Agente finalizado.");
+            System.out.println("Agente [" +this.getName()+ "] finalizado.");
         }
        
 }
