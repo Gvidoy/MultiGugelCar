@@ -20,8 +20,8 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "agente456";
-    private static String nombreLider = "Lider45";
+    public static final String NOMBRE_AGENTE = "agente4597";
+    private static String nombreLider = "Lider4g5";
     /**
      * @param args the command line arguments
      */

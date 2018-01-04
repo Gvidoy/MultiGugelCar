@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Random;
 import javafx.util.Pair;
 
@@ -33,7 +34,7 @@ import javafx.util.Pair;
 public class Agente extends SingleAgent {
  
     public static final String MAPA = "map6";
-    private static String nombreLider = "Lider45";
+    private static String nombreLider = "Lider4g5";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
@@ -59,6 +60,9 @@ public class Agente extends SingleAgent {
     private int num_pasos;
     private Integer indice_ultima_direccion;
     private int contador;
+    private int contador_movimientos;
+    private boolean movimiento_paralelo;
+    private int c;
     
     private boolean objetivo_encontrado;
     
@@ -93,7 +97,11 @@ public class Agente extends SingleAgent {
         this.indice_ultima_direccion = null;
         this.contador=0;
         this.objetivo_encontrado = false;
-        this.enObjetivo = false; 
+        this.enObjetivo = false;
+        this.movimiento_paralelo = false;
+        this.c = 0;
+        
+        this.contador_movimientos = 0;
     }
    
     //public void init();
@@ -1410,81 +1418,7 @@ public class Agente extends SingleAgent {
     private ArrayList<Integer> direccionesHaciaElObjetivo() {
         ArrayList<Integer> direcciones = new ArrayList();
         
-        //INICIO DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
-/*
-            // Dependiendo de donde se encuentre el objetivo nos moveremos en una direccion u otra
-            if(this.coord_x_objetivo < this.x){
-                
-                // Si el OBJETIVO se encuentra a nuestra IZQUIERDA, nos moveremos hacia el OESTE
-                // ¿Hacia el NW, W o SW? Depende de si la coordenada 'y' del objetivo es MENOR, MAYOR o IGUAL que la del vehiculo
-                
-                if(this.coord_y_objetivo < this.y){
-                    direcciones.add(new Pair(0,0));
-                    direcciones.add(new Pair(1,0));
-                    direcciones.add(new Pair(3,0));
-                }
-                    //next_move = "moveNW";
-                
-                else if(this.coord_y_objetivo == this.y){
-                    direcciones.add(new Pair(3,0));
-                    direcciones.add(new Pair(0,0));
-                    direcciones.add(new Pair(5,0));
-                }
-                    //next_move = "moveW";
-                
-                else{
-                    direcciones.add(new Pair(5,0));
-                    direcciones.add(new Pair(3,0));
-                    direcciones.add(new Pair(6,0));
-                }
-                    //next_move = "moveSW";
-            }
-            else if(this.coord_x_objetivo == this.x){
-                
-                // Si el OBJETIVO se encuentra en nuestra misma coordenada 'x', entonces, solo puede estar encima o debajo nuestra.
-                // Por lo tanto, nos tendremos que mover o al SUR o al NORTE. De nuevo, depende del valor de la coordenada 'y'
-                
-                if(this.coord_y_objetivo < this.y){
-                    direcciones.add(new Pair(1,0));
-                    direcciones.add(new Pair(0,0));
-                    direcciones.add(new Pair(2,0));
-                }
-                    //next_move = "moveN";
-            
-                else{
-                    direcciones.add(new Pair(6,0));
-                    direcciones.add(new Pair(5,0));
-                    direcciones.add(new Pair(7,0));
-                }
-                    //next_move = "moveS";
-            }
-            else{
-                
-                // La ultima opcion es que el OBJETIVO se encuentra a nuestra DERECHA, en tal caso debemos de ir al ESTE.
-                // ¿Hacia el NE, E o SE? Depende de si la coordenada 'y' del objetivo es MENOR, MAYOR o IGUAL que la del vehiculo
-                if(this.coord_y_objetivo < this.y){
-                    direcciones.add(new Pair(2,0));
-                    direcciones.add(new Pair(1,0));
-                    direcciones.add(new Pair(4,0));
-                }
-                    //next_move = "moveNE";
-                
-                else if(this.coord_y_objetivo == this.y){
-                    direcciones.add(new Pair(4,0));
-                    direcciones.add(new Pair(2,0));
-                    direcciones.add(new Pair(7,0));
-                }
-                    //next_move = "moveE";
-                
-                else{
-                    direcciones.add(new Pair(7,0));
-                    direcciones.add(new Pair(4,0));
-                    direcciones.add(new Pair(6,0));
-                }
-                    //next_move = "moveSE";
-                    
-            } // FIN DEL COMPORTAMIENTO PARA IR HASTA EL OBJETIVO
-      */
+    
 
         if(this.coord_x_objetivo < this.x){
             direcciones.add(3);
@@ -1531,7 +1465,7 @@ public class Agente extends SingleAgent {
 
     private void nuevaLogica() throws InterruptedException {
         
-        String next_move;
+        String next_move = ""; 
 	
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
 	if(this.battery <= 10)
@@ -1583,22 +1517,6 @@ public class Agente extends SingleAgent {
         
             switch(this.tipoVehiculo){
                 case DRON:
-                    // El caso del dron es particular y las unicas direcciones que tendra prohibidas son aquellas que
-                    // tienen el limite del mundo
-                    //
-                    //int aux = 0;
-                    //
-                    //for(int i=0; i < 3; i++){
-                    //    for(int j=0; j < 3; j++){
-                    //    
-                    //        if(this.sensor.get(i).get(j)==2){
-                    //            posibles_movimientos[aux] = false;
-                    //        }
-                    //    
-                    //        aux++;
-                    //    }
-                    //}
-                    //
                     inicio = 0;
                     fin = 2;
                     centro = 1;
@@ -1622,38 +1540,127 @@ public class Agente extends SingleAgent {
                 
                     if(i != centro || j != centro){
                         int lectura = this.sensor.get(i).get(j);
+                        //int p = this.buscarLimite();
                 
                         if((lectura == 1 && (this.tipoVehiculo == TipoVehiculo.COCHE 
                                 || this.tipoVehiculo == TipoVehiculo.CAMION))  || lectura == 2)
                             posibles_movimientos[aux] = false;
-                
+                        
+                        //if(p != -1){
+                        //    posibles_movimientos[p] = false;
+                        //}
                         aux++;
                     }
                 }
             }
         
             // Ya tenemos los posibles movimientos
-        
-            if(this.indice_ultima_direccion != null && posibles_movimientos[this.indice_ultima_direccion]){
-                next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
-            } else {
             
+            // Si hemos tomado una direccion y podemos seguir en la misma
+            if(this.indice_ultima_direccion != null && posibles_movimientos[this.indice_ultima_direccion] && this.c < this.range*2.5){
+                
+                next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
+                
+                if(this.indice_ultima_direccion == 1 || this.indice_ultima_direccion == 6)
+                    this.c++;
+                //this.contador_movimientos++;
+                // Se ejecuta si no estoy haciendo movimientos paralelos y cuando estoy haciendo movimientos paralelos y no me he pasado del contador
+                //if(!this.movimiento_paralelo || (this.movimiento_paralelo && this.contador_movimientos < this.range)){
+                //    next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
+                //    this.contador_movimientos++;
+                //}
+            } else {
+                
+                this.c = 0;
+                this.movimiento_paralelo = false;
+                
                 if(this.indice_ultima_direccion != null){
                     posibles_movimientos[7-this.indice_ultima_direccion] = false;
                 }
             
                 Integer indice_direccion = null;
                 boolean encontrado = false;
+                ArrayList<Integer> direcciones = new ArrayList();
         
-                for (int i=0; i < posibles_movimientos.length && !encontrado; i++){
+                for (int i=0; i < posibles_movimientos.length; i++){
                     if(posibles_movimientos[i] == true){
-                        encontrado = true;
-                        indice_direccion = i;
+                        //encontrado = true;
+                        direcciones.add(i);
                     }
                 }
-        
+                
+                Iterator<Integer> it = direcciones.iterator();
+                
+                while(it.hasNext()){
+                    Integer i = it.next();
+                    
+                    if(i == 1 || i == 3 || i == 4 || i == 6){
+                        it.remove();
+                    }
+                }
+                
+                Random r = new Random();
+                
+                indice_direccion = direcciones.get(r.nextInt(direcciones.size()));
+                
+                // Ya tenemos calculada la horizontal
                 next_move = traducirIndiceDireccion(indice_direccion);
                 this.indice_ultima_direccion = indice_direccion;
+                
+                
+                //this.contador_movimientos = 0;
+                
+                int punto_cardinal = buscarLimite();
+                
+                if(punto_cardinal != -1){
+                    this.contador_movimientos++;
+                    
+                    if(this.contador_movimientos == 3){
+                        if(posibles_movimientos[1]){
+                            next_move = "moveN";
+                            this.indice_ultima_direccion = 1;
+                            this.c++;
+                        } else {
+                            next_move = "moveS";
+                            this.indice_ultima_direccion = 6;
+                            this.c++;
+                        }
+                            
+                        
+                        this.contador_movimientos = 0;
+                    }
+                }
+                /*if(punto_cardinal > 0){
+                    switch(punto_cardinal){
+                        case 1:
+                            this.contador_movimientos = 0;
+                            next_move = "moveS";
+                            this.indice_ultima_direccion = 6;
+                            this.movimiento_paralelo = true;
+                            break;
+                        case 4:
+                            this.contador_movimientos = 0;
+                            next_move = "moveW";
+                            this.indice_ultima_direccion = 3;
+                            this.movimiento_paralelo = true;
+                            break;
+                        case 3:
+                            this.contador_movimientos = 0;
+                            this.indice_ultima_direccion = 4;
+                            next_move = "moveE";
+                            this.movimiento_paralelo = true;
+                        case 6:
+                            this.contador_movimientos = 0;
+                            this.indice_ultima_direccion = 1;
+                            next_move = "moveN";
+                            this.movimiento_paralelo = true;
+                            break;
+                        case -1:
+                            next_move = traducirIndiceDireccion(indice_direccion);
+                            this.indice_ultima_direccion = indice_direccion;
+                            break;
+                    }
+                }*/
             }
         }
         
@@ -1720,6 +1727,36 @@ public class Agente extends SingleAgent {
                 this.enObjetivo = true;
                 System.out.println("En objetivoo!!!!!");
             }
+        }
+        
+        return -1;
+    }
+    
+    public int buscarLimite(){
+        
+        int inicio = 0, fin = 0, centro = 0;
+        int tam = this.sensor.get(0).size()-1;
+        
+            switch(this.tipoVehiculo){
+                case DRON:
+                    centro = 1;
+                    break;
+                case COCHE:
+                    centro = 2;
+                    break;
+                case CAMION:
+                    centro = 5;
+                    break;
+        }
+        
+        if(this.sensor.get(0).get(centro) == 2){
+            return 1;
+        } else if(this.sensor.get(centro).get(0) == 2){
+            return 3;
+        } else if(this.sensor.get(centro).get(tam) == 2){
+            return 4;
+        } else if(this.sensor.get(tam).get(centro) == 2){
+            return 6;
         }
         
         return -1;
