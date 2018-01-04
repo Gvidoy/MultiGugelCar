@@ -54,7 +54,7 @@ public class Lider extends SingleAgent{
         super(aid);
         this.conversationID = "";
         this.agentCount = 0; 
-        queue = new MessageQueue(40000);
+        queue = new MessageQueue(9000);
         this.cancelCount = 0;
         this.coord_x_objetivo = 0;
         this.coord_y_objetivo = 0;
@@ -68,6 +68,7 @@ public class Lider extends SingleAgent{
         System.out.println("["+this.getName()+"] Activado");
         int cont = 0;
         while (!finalizado)  {
+            System.out.println("tamaño cola: "+ queue.getSize());
             while (queue.isEmpty())  { // Iddle mientras no ha recibido nada. No bloqueante
                 cont++;
             
@@ -132,11 +133,11 @@ public class Lider extends SingleAgent{
                        this.send(outbox);
                        break;
                     case "peticionCancel":
-                   //     this.cancelCount++;
-                   //     if(this.cancelCount ==  this.agentCount){
+                       this.cancelCount++;
+                        if(this.cancelCount ==  this.agentCount){
                                cancel();
-                     //  this.finalizado = true;
-                    //    }
+                       this.finalizado = true;
+                       }
                       
                      
                     break;
@@ -361,6 +362,10 @@ public class Lider extends SingleAgent{
           int py = Integer.parseInt(partes[1]);
           String nombreV =  partes[2];
           String vector = partes[3];
+          int energia = Integer.parseInt(partes[4]);
+          if(energia == 0){
+              cancel();
+          }
           vector = vector.replace(",","");
           vector = vector.replace("[","");
           vector = vector.replace("]","");

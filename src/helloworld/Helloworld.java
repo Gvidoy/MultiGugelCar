@@ -20,8 +20,8 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "Juanicon";
-    private static String nombreLider = "Liderrr";
+    public static final String NOMBRE_AGENTE = "Juanio58";
+    private static String nombreLider = "Liderrr1";
     /**
      * @param args the command line arguments
      */
@@ -39,14 +39,15 @@ public class Helloworld {
             a = new Agente(new AgentID(NOMBRE_AGENTE));
             a .start();
             Thread.sleep(10000); 
-            b = new Agente(new AgentID("Gregon"));
+            b = new Agente(new AgentID("Gregon95mm"));
             b .start();
-            Thread.sleep(3000); 
-           c = new Agente(new AgentID("Blade5n"));
+            Thread.sleep(9000); 
+           c = new Agente(new AgentID("Bladb"));
             c .start();
-              Thread.sleep(3000); 
-            d = new Agente(new AgentID("Paco5nn"));
+              Thread.sleep(8000); 
+            d = new Agente(new AgentID("Paco5nn9"));
             d .start();
+
         } catch (Exception ex) {
             System.out.println("Error al crear el agente ");
         }
