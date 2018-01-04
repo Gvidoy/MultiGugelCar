@@ -27,7 +27,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
-    private final int limiteIDLE = 40; 
+    private final int limiteIDLE = 60; 
     private boolean finalizado;
     private int agentCount;
     private String conversationID;
@@ -54,7 +54,7 @@ public class Lider extends SingleAgent{
         super(aid);
         this.conversationID = "";
         this.agentCount = 0; 
-        queue = new MessageQueue(100);
+        queue = new MessageQueue(4000);
         this.cancelCount = 0;
         this.coord_x_objetivo = 0;
         this.coord_y_objetivo = 0;
@@ -73,7 +73,7 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(1000); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(500); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -132,11 +132,11 @@ public class Lider extends SingleAgent{
                        this.send(outbox);
                        break;
                     case "peticionCancel":
-                       /// this.cancelCount++;
-                     //   if(this.cancelCount ==  this.agentCount){
+                   //     this.cancelCount++;
+                   //     if(this.cancelCount ==  this.agentCount){
                                cancel();
-                       /// this.finalizado = true;
-                        //}
+                     //  this.finalizado = true;
+                    //    }
                       
                      
                     break;

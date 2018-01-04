@@ -33,8 +33,8 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    public static final String MAPA = "map1";
-    private static String nombreLider = "Lidmmm";
+    public static final String MAPA = "map2";
+    private static String nombreLider = "Liderrr";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
@@ -81,7 +81,7 @@ public class Agente extends SingleAgent {
         this.finalizado = false;
         this.outbox = null;
 
-        queue = new MessageQueue(20);
+        queue = new MessageQueue(90);
         
         
         this.conversationID = "";
