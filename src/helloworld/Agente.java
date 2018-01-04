@@ -33,11 +33,12 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    public static final String MAPA = "map2";
-    private static String nombreLider = "Liderrr";
+    public static final String MAPA = "map10";
+    private static String nombreLider = "Liderrr1";
     private ACLMessage outbox;
     private String conversationID;
     private String reply_withID;
+    private int badp_count;
     
     //mensajes
     private MessageQueue queue;
@@ -68,6 +69,7 @@ public class Agente extends SingleAgent {
     
     private int centro_mapa;
     private boolean finalizado;
+    private int energy;
     
 
     public Agente() throws Exception {
@@ -80,8 +82,8 @@ public class Agente extends SingleAgent {
         super(aid);
         this.finalizado = false;
         this.outbox = null;
-
-        queue = new MessageQueue(90);
+        this.badp_count = 0;
+        queue = new MessageQueue(300);
         
         
         this.conversationID = "";
@@ -127,23 +129,29 @@ public class Agente extends SingleAgent {
                 Thread.sleep(3000);
                 enviar_datos_inicales();
                 System.out.println("-------------Procedemos a buscar el objetivo--------------------");
-                while(!objetivo_encontrado){
+                while(!objetivo_encontrado && !finalizado){
 
                     this.nuevaLogica();
                     this.doQuery_ref();
                       contador++;
                       System.out.println("----------------iteraciones: " + contador);
+                      if(this.badp_count > 30){
+                          ejecutarCancel();
+                      }
                 }      
 
 
                 System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
-                while(!this.enObjetivo){
+                while(!this.enObjetivo  && !finalizado){
                     System.out.println("hacia el objetivo.");
                     int indice_direccion = irHaciaObjetivo();
                     String next_move = this.traducirIndiceDireccion(indice_direccion);
                     performMove(next_move);
                     this.doQuery_ref();
+                    if(this.badp_count > 30){
+                          ejecutarCancel();
+                    }
                 }
 
             ejecutarCancel();
@@ -152,7 +160,7 @@ public class Agente extends SingleAgent {
                 Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
 
             }
-            System.out.println("Agente finalizado.");
+            System.out.println("Agente [" +this.getName()+ "] finalizado.");
         }
        
 }
@@ -1192,6 +1200,9 @@ public class Agente extends SingleAgent {
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inbox.getContent()); 
                   this.reply_withID = inbox.getReplyWith();
+                  this.badp_count++;
+                   System.out.println("Bad count: " + this.badp_count ) ;
+
 
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
@@ -1229,6 +1240,9 @@ public class Agente extends SingleAgent {
               if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inbox.getContent());
                   this.reply_withID = inbox.getReplyWith();
+                  this.badp_count++;
+                  System.out.println("Bad count: " + this.badp_count ) ;
+
 
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
@@ -1241,6 +1255,7 @@ public class Agente extends SingleAgent {
                   this.battery = Integer.parseInt(json2.get("battery").toString());
                   this.x = Integer.parseInt(json2.get("x").toString());
                   this.y = Integer.parseInt(json2.get("y").toString());
+                  this.energy = Integer.parseInt(json2.get("energy").toString());
                   JsonObject objetoSensor = Json.parse(inbox.getContent()).asObject();
                   objetoSensor = objetoSensor.get("result").asObject();
                   JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
@@ -1252,7 +1267,7 @@ public class Agente extends SingleAgent {
 
                         setDestinatario(Agente.nombreLider);
                         outbox.setPerformative(ACLMessage.INFORM);  
-                        outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor);
+                        outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor + "-" + this.energy);
                         outbox.setConversationId("DatosSensor");
                         this.send(outbox);
                         while (queue.isEmpty()){Thread.sleep(1);};
@@ -1772,8 +1787,10 @@ public class Agente extends SingleAgent {
         setDestinatario(Agente.nombreLider);
         outbox.setConversationId("peticionCancel");
         outbox.setPerformative(ACLMessage.REQUEST);
-        this.send(outbox);  
         this.finalizado = true;
+      //  this.send(outbox);  
+
+        
     }
     
 }
