@@ -27,13 +27,15 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
-    private final int limiteIDLE = 120; 
+    private final int limiteIDLE = 40; 
+    private boolean finalizado;
     private int agentCount;
     private String conversationID;
     private ACLMessage outbox;
     private MessageQueue queue;
     private int coord_x_objetivo;
     private int coord_y_objetivo;
+    private int cancelCount;
 
     /**funciones
      * - Enviar mapa tamaño n
@@ -53,9 +55,10 @@ public class Lider extends SingleAgent{
         this.conversationID = "";
         this.agentCount = 0; 
         queue = new MessageQueue(100);
-        
+        this.cancelCount = 0;
         this.coord_x_objetivo = 0;
         this.coord_y_objetivo = 0;
+        this.finalizado = false;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class Lider extends SingleAgent{
         System.out.println("\nHola soy el Lidl ");
         System.out.println("["+this.getName()+"] Activado");
         int cont = 0;
-        while (true)  {
+        while (!finalizado)  {
             while (queue.isEmpty())  { // Iddle mientras no ha recibido nada. No bloqueante
                 cont++;
             
@@ -74,14 +77,16 @@ public class Lider extends SingleAgent{
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                if (cont==limiteIDLE){
+               if (cont==limiteIDLE){
                     cancel();
                     break;
                 }
+                
             }
             if(cont == limiteIDLE){
                 break;
             }
+            
             // En cuanto la cola tiene al menos un mensaje, se extraen todos
             // los que haya
             try {
@@ -125,7 +130,16 @@ public class Lider extends SingleAgent{
                        outbox.setPerformative(ACLMessage.INFORM);
                        outbox.setReceiver(inbox.getSender());      
                        this.send(outbox);
-                       
+                       break;
+                    case "peticionCancel":
+                       /// this.cancelCount++;
+                     //   if(this.cancelCount ==  this.agentCount){
+                               cancel();
+                       /// this.finalizado = true;
+                        //}
+                      
+                     
+                    break;
                     default:
                         break;
                         
