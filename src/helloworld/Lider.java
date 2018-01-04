@@ -27,7 +27,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
-    private final int limiteIDLE = 80; 
+    private final int limiteIDLE = 120; 
     private int agentCount;
     private String conversationID;
     private ACLMessage outbox;
