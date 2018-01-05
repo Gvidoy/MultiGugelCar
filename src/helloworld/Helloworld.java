@@ -38,9 +38,11 @@ public class Helloworld {
             Thread.sleep(5000); 
             a = new Agente(new AgentID(NOMBRE_AGENTE));
             a .start();
+            
             Thread.sleep(5000); 
             b = new Agente(new AgentID("Gregon95mm"));
             b .start();
+            
             Thread.sleep(5000); 
             d = new Agente( new AgentID("Dani"));
             d.start();

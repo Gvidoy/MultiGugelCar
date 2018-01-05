@@ -33,7 +33,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    public static final String MAPA = "map9";
+    public static final String MAPA = "map1";
     private static String nombreLider = "Liderrr1";
     private ACLMessage outbox;
     private String conversationID;
@@ -1502,6 +1502,7 @@ public class Agente extends SingleAgent {
                 Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        
 	// En primer lugar, comprobamos si el objetivo se encuentra al alcance para actuar de una manera u otra.
         this.objetivo_encontrado = objetivoAlAlcance();
        
@@ -1693,6 +1694,11 @@ public class Agente extends SingleAgent {
         }
         
         System.out.println("La direccion escogida es: " + next_move);
+        
+        
+        if(this.contador %10 == 0){
+            preguntarSiHayObjetivo();
+        }
         this.performMove(next_move);
     }
 
@@ -1799,6 +1805,30 @@ public class Agente extends SingleAgent {
       //  this.send(outbox);  
 
         
+    }
+
+
+    private void preguntarSiHayObjetivo() throws InterruptedException {
+       setDestinatario(Agente.nombreLider);
+        outbox.setConversationId("askObjetivo");
+        outbox.setPerformative(ACLMessage.REQUEST);  
+        this.send(outbox);
+        ACLMessage inbox = new ACLMessage();
+
+        while (queue.isEmpty()){ Thread.sleep(1);};   
+        inbox = queue.Pop();
+              
+        switch (inbox.getPerformativeInt()) {
+            case ACLMessage.INFORM:
+               String content = inbox.getContent();
+               String[] data = content.split(",");
+               this.coord_x_objetivo = Integer.parseInt(data[0]);
+               this.coord_y_objetivo = Integer.parseInt(data[1]);
+               this.objetivo_encontrado = true;
+                System.out.println("TENGO COORDENADAS DE OTRO AGENTE");
+            break;
+        }
+
     }
     
 }

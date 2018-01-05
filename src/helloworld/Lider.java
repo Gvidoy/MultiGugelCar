@@ -120,11 +120,10 @@ public class Lider extends SingleAgent{
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
-                        
-                    case "solicitarCoordenadasObjetivo":
-                        informarAgenteObjetivo(inbox);
+                    
+                    case "askObjetivo":
+                        devolverCoordenadas(inbox);
                         break;
-                        
                     case "sendKey":
                          sendConversationID(inbox);
                         break;
@@ -183,33 +182,7 @@ public class Lider extends SingleAgent{
         System.out.println("Coordenada x del objetivo " + Integer.toString(objeto.get("x").asInt()));
         System.out.println("Coordenada y del objetivo " + Integer.toString(objeto.get("y").asInt()));
     }
-    
-    /**
-     * @author Oleksandr
-     * Informa al agente solicitante sobre las coordenadas del objetivo
-     * @param in
-     * @throws InterruptedException 
-    */
-    private void informarAgenteObjetivo(ACLMessage in){
-        outbox = new ACLMessage();
-        outbox.setSender(this.getAid());
-        outbox.setReceiver(in.getSender());
-        outbox.setConversationId("solicitarCoordenadasObjetivo");
-        outbox.setPerformative(ACLMessage.AGREE);
-
-        JSONObject content = new JSONObject();
-        try {
-            content.put("x", this.coord_x_objetivo);
-            content.put("y", this.coord_y_objetivo);
-        } catch (JSONException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        outbox.setContent(content.toString());
-        
-        this.send(outbox);
-    //    System.out.println("\nInformando al agente " + in.getSender().name + " donde esta el objetivo");
-    }
-    
+   
         public void sendConversationID(ACLMessage msg) throws InterruptedException{
 
         //  ACLMessage inbox = new ACLMessage();
@@ -434,6 +407,20 @@ public class Lider extends SingleAgent{
     System.out.println("Tengo memoria");
           
   
+    }
+
+    private void devolverCoordenadas(ACLMessage inbox) {
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(inbox.getSender());      
+      
+        if(this.coord_x_objetivo != 0 && this.coord_y_objetivo != 0 ){
+             outbox.setPerformative(ACLMessage.INFORM);
+             outbox.setContent(this.coord_x_objetivo + "," + this.coord_y_objetivo);
+        }else{
+             outbox.setPerformative(ACLMessage.DISCONFIRM);
+        }
+         this.send(outbox);  
     }
     
     
