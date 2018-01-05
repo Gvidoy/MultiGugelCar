@@ -20,7 +20,7 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "Juanio58";
+    public static final String NOMBRE_AGENTE = "Kudry";
     private static String nombreLider = "Liderrr1";
     /**
      * @param args the command line arguments
@@ -28,26 +28,27 @@ public class Helloworld {
     public static void main(String[] args) {
 
        org.apache.log4j.BasicConfigurator.configure(new NullAppender());
-       Agente a,b,c,d; 
+       Agente a,b,c,d,e;
        Lider lidl;
        
        AgentsConnection.connect("isg2.ugr.es",6000,"Bellatrix","Escorpion","Russo",false);
         try {
             lidl = new Lider(new AgentID(nombreLider));
             lidl.start();
-
+            Thread.sleep(5000); 
             a = new Agente(new AgentID(NOMBRE_AGENTE));
             a .start();
-            Thread.sleep(10000); 
+            Thread.sleep(5000); 
             b = new Agente(new AgentID("Gregon95mm"));
             b .start();
-            Thread.sleep(9000); 
-           c = new Agente(new AgentID("Bladb"));
-            c .start();
-              Thread.sleep(8000); 
-            d = new Agente(new AgentID("Paco5nn9"));
-            d .start();
+            Thread.sleep(5000); 
+            d = new Agente( new AgentID("Dani"));
+            d.start();
+            Thread.sleep(5000); 
+            e = new Agente( new AgentID("Nacho"));
+            e.start();
 
+          
         } catch (Exception ex) {
             System.out.println("Error al crear el agente ");
         }
