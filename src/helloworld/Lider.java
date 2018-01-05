@@ -120,12 +120,14 @@ public class Lider extends SingleAgent{
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
+                    
                     case "askObjetivo":
                         devolverCoordenadas(inbox);
                         break;
                     case "sendKey":
                          sendConversationID(inbox);
                         break;
+                        
                     case "DatosSensor":
                        actualizarMapaLider(inbox);
                        
@@ -135,6 +137,7 @@ public class Lider extends SingleAgent{
                        outbox.setReceiver(inbox.getSender());      
                        this.send(outbox);
                        break;
+                       
                     case "peticionCancel":
                        this.cancelCount++;
                         if(this.cancelCount ==  this.agentCount){
@@ -179,7 +182,7 @@ public class Lider extends SingleAgent{
         System.out.println("Coordenada x del objetivo " + Integer.toString(objeto.get("x").asInt()));
         System.out.println("Coordenada y del objetivo " + Integer.toString(objeto.get("y").asInt()));
     }
-    
+   
         public void sendConversationID(ACLMessage msg) throws InterruptedException{
 
         //  ACLMessage inbox = new ACLMessage();

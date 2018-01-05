@@ -131,11 +131,15 @@ public class Agente extends SingleAgent {
 
                     this.nuevaLogica();
                     this.doQuery_ref();
-                      contador++;
-                      System.out.println("----------------iteraciones: " + contador);
-                      if(this.badp_count > 30){
-                          ejecutarCancel();
-                      }
+                    if(contador%10 == 0 && !objetivo_encontrado){
+                        solicitarCoordenadasObjetivo();
+                        System.out.println("Solicitando coordenadas del objetivo");
+                    }
+                    contador++;
+                    System.out.println("----------------iteraciones: " + contador);
+                    if(this.badp_count > 30){
+                        ejecutarCancel();
+                    }
                 }      
 
 
@@ -1228,56 +1232,67 @@ public class Agente extends SingleAgent {
         outbox.setPerformative(ACLMessage.QUERY_REF);  
         this.send(outbox);     
         ACLMessage inbox = new ACLMessage();
-          try {
-               while (queue.isEmpty()){ Thread.sleep(1);};   
-                inbox = queue.Pop();
+          
+        try {
+            while (queue.isEmpty()){ Thread.sleep(1);};   
+            inbox = queue.Pop();
               
-              if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inbox.getContent());
-                  this.reply_withID = inbox.getReplyWith();
-                  this.badp_count++;
-                  System.out.println("Bad count: " + this.badp_count ) ;
+            if (inbox.getPerformativeInt() == ACLMessage.FAILURE || inbox.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
+                System.out.println("Failure: " + inbox.getContent());
+                this.reply_withID = inbox.getReplyWith();
+                this.badp_count++;
+                System.out.println("Bad count: " + this.badp_count ) ;
+            }
+            
+            else if (inbox.getPerformativeInt() == ACLMessage.INFORM){ 
 
+                System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
+                this.reply_withID = inbox.getReplyWith();
 
-              }
-              if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  
-                  System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
-                  this.reply_withID = inbox.getReplyWith();
-                  
-                  JSONObject json = new JSONObject(inbox.getContent());
-                  JSONObject json2 = new JSONObject(json.get("result").toString());
-                  this.battery = Integer.parseInt(json2.get("battery").toString());
-                  this.x = Integer.parseInt(json2.get("x").toString());
-                  this.y = Integer.parseInt(json2.get("y").toString());
-                  this.energy = Integer.parseInt(json2.get("energy").toString());
-                  JsonObject objetoSensor = Json.parse(inbox.getContent()).asObject();
-                  objetoSensor = objetoSensor.get("result").asObject();
-                  JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
-                  leerSensor(vectorSensor);
-                  System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y );
-                  
-                  if(!"".equals(this.last_move)){
-                        System.out.println("Hacemos peticion para actualizar mapa");
+                JSONObject json = new JSONObject(inbox.getContent());
+                JSONObject json2 = new JSONObject(json.get("result").toString());
+                this.battery = Integer.parseInt(json2.get("battery").toString());
+                this.x = Integer.parseInt(json2.get("x").toString());
+                this.y = Integer.parseInt(json2.get("y").toString());
+                this.energy = Integer.parseInt(json2.get("energy").toString());
+                JsonObject objetoSensor = Json.parse(inbox.getContent()).asObject();
+                objetoSensor = objetoSensor.get("result").asObject();
+                JsonArray vectorSensor = objetoSensor.get("sensor").asArray();
+                leerSensor(vectorSensor);
+                System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y );
 
-                        setDestinatario(Agente.nombreLider);
-                        outbox.setPerformative(ACLMessage.INFORM);  
-                        outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor + "-" + this.energy);
-                        outbox.setConversationId("DatosSensor");
-                        this.send(outbox);
-                        while (queue.isEmpty()){Thread.sleep(1);};
-                        ACLMessage inb = queue.Pop();
-                            if (inb.getPerformativeInt() == ACLMessage.INFORM ){
-                                System.out.println("Se ha actualizado el mapa en agente y lider");
-                            }
-                  }
+                if(!"".equals(this.last_move)){
+                    System.out.println("Hacemos peticion para actualizar mapa");
+
+                    setDestinatario(Agente.nombreLider);
+                    outbox.setPerformative(ACLMessage.INFORM);  
+                    outbox.setContent(this.x + "-" + this.y + "-" + this.getName() + "-" + this.sensor + "-" + this.energy);
+                    outbox.setConversationId("DatosSensor");
+                    this.send(outbox);
+                    while (queue.isEmpty()){Thread.sleep(1);};
+                    ACLMessage inb = queue.Pop();
+                    if (inb.getPerformativeInt() == ACLMessage.INFORM ){
+                        System.out.println("Se ha actualizado el mapa en agente y lider");
+                    }
+                }
+
+            }
+            
+            else if(inbox.getPerformativeInt() == ACLMessage.AGREE){
+                JSONObject json = new JSONObject(inbox.getContent());
+                coord_x_objetivo = Integer.parseInt(json.get("x").toString());
+                coord_y_objetivo = Integer.parseInt(json.get("y").toString());
+
+                if(coord_x_objetivo != 0 && coord_y_objetivo != 0){
+                    objetivo_encontrado = true;
+                }
+                System.out.println("Recibiendo coordenadas del objetivo");
+            }
                   
-                  
-                  
-              } 
-          } catch (InterruptedException ex) {
-              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-          }
+             
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
           
           
@@ -1382,6 +1397,14 @@ public class Agente extends SingleAgent {
         this.send(outbox);
     }
     
+   
+    private void solicitarCoordenadasObjetivo(){
+        setDestinatario(Agente.nombreLider);
+        outbox.setConversationId("solicitarCoordenadasObjetivo");
+        outbox.setPerformative(ACLMessage.INFORM);  
+        outbox.setContent(this.conversationID);
+        this.send(outbox);
+    }
 
     /**
     * @author Dani
@@ -1482,6 +1505,7 @@ public class Agente extends SingleAgent {
         
 	// En primer lugar, comprobamos si el objetivo se encuentra al alcance para actuar de una manera u otra.
         this.objetivo_encontrado = objetivoAlAlcance();
+       
 
         if(this.objetivo_encontrado){
             
