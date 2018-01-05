@@ -33,7 +33,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    public static final String MAPA = "map10";
+    public static final String MAPA = "map9";
     private static String nombreLider = "Liderrr1";
     private ACLMessage outbox;
     private String conversationID;
@@ -114,20 +114,18 @@ public class Agente extends SingleAgent {
         if(!finalizado){
             try {
 
-               //System.out.println("voy a ver si hay clave " + " - " + this.getName());
             if(!askForConversationID()){
                 Thread.sleep(3000);
-                //System.out.println("No hay, voy a suscribirme " + " - " + this.getName());
                 subscribe();
             }
 
                 checkin();
 
                 doQuery_ref();
-
-
                 Thread.sleep(3000);
+                
                 enviar_datos_inicales();
+
                 System.out.println("-------------Procedemos a buscar el objetivo--------------------");
                 while(!objetivo_encontrado && !finalizado){
 
@@ -153,7 +151,7 @@ public class Agente extends SingleAgent {
                           ejecutarCancel();
                     }
                 }
-
+                
             ejecutarCancel();
 
             } catch (InterruptedException | JSONException ex) {
@@ -1041,9 +1039,7 @@ public class Agente extends SingleAgent {
                    Thread.sleep(1);
                 };
                  ACLMessage inb = queue.Pop();
-                System.out.println("\n["+this.getName()+"] Mensaje : "+ inb.getPerformative() + " Recibido");
-
-              
+                System.out.println("\n["+this.getName()+"] Mensaje : "+ inb.getPerformative() + " Recibido");           
               if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
                   System.out.println("Failure: " + inb.getContent() + " - " + this.getName());        
               }
@@ -1068,7 +1064,6 @@ public class Agente extends SingleAgent {
     public boolean checkin() throws InterruptedException, JSONException{
 
         JSONObject jsonLogin = new JSONObject();
-        
         try {
             jsonLogin.put("command", "checkin");
             
@@ -1082,8 +1077,8 @@ public class Agente extends SingleAgent {
         outbox.setConversationId(this.conversationID);
         outbox.setContent(jsonLogin.toString());
         outbox.setPerformative(ACLMessage.REQUEST);  
+        
         this.send(outbox);     
-        System.out.println("aqui llego");
           try {
               
                 while (queue.isEmpty()){Thread.sleep(1);}; 
@@ -1355,19 +1350,14 @@ public class Agente extends SingleAgent {
     }
     
       public boolean askForConversationID() throws InterruptedException{
- 
-   
 
         setDestinatario(this.nombreLider);
         outbox.setPerformative(ACLMessage.REQUEST); 
         outbox.setConversationId("sendKey");
-        
         this.send(outbox);
-
         while (queue.isEmpty()){
            Thread.sleep(1);
-        };
-        
+        };      
         ACLMessage inb = queue.Pop();
             if (inb.getPerformativeInt() == ACLMessage.FAILURE ){
                 System.out.println("No hay ID todavia.");
@@ -1377,10 +1367,7 @@ public class Agente extends SingleAgent {
                   this.conversationID = inb.getConversationId();
                   System.out.println("Aceptada " + this.conversationID);
             } 
-          
-        
-        return true;
-        
+        return true;      
     };
     
     /**
@@ -1392,9 +1379,7 @@ public class Agente extends SingleAgent {
         outbox.setConversationId("sendKey");
         outbox.setPerformative(ACLMessage.INFORM);  
         outbox.setContent(this.conversationID);
-        this.send(outbox);     
-
-       
+        this.send(outbox);
     }
     
 
@@ -1418,7 +1403,6 @@ public class Agente extends SingleAgent {
         ACLMessage inb = queue.Pop();
             if (inb.getPerformativeInt() == ACLMessage.INFORM ){ 
         }
-        
         System.out.println("datos iniciales recibidos por lider " + this.x + "," + this.y + "," + this.tipoVehiculo);
     }
     
