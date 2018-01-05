@@ -120,9 +120,15 @@ public class Lider extends SingleAgent{
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
+                        
+                    case "solicitarCoordenadasObjetivo":
+                        informarAgenteObjetivo(inbox);
+                        break;
+                        
                     case "sendKey":
                          sendConversationID(inbox);
                         break;
+                        
                     case "DatosSensor":
                        actualizarMapaLider(inbox);
                        
@@ -132,6 +138,7 @@ public class Lider extends SingleAgent{
                        outbox.setReceiver(inbox.getSender());      
                        this.send(outbox);
                        break;
+                       
                     case "peticionCancel":
                        this.cancelCount++;
                         if(this.cancelCount ==  this.agentCount){
@@ -175,6 +182,32 @@ public class Lider extends SingleAgent{
         
         System.out.println("Coordenada x del objetivo " + Integer.toString(objeto.get("x").asInt()));
         System.out.println("Coordenada y del objetivo " + Integer.toString(objeto.get("y").asInt()));
+    }
+    
+    /**
+     * @author Oleksandr
+     * Informa al agente solicitante sobre las coordenadas del objetivo
+     * @param in
+     * @throws InterruptedException 
+    */
+    private void informarAgenteObjetivo(ACLMessage in){
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(in.getSender());
+        outbox.setConversationId("solicitarCoordenadasObjetivo");
+        outbox.setPerformative(ACLMessage.AGREE);
+
+        JSONObject content = new JSONObject();
+        try {
+            content.put("x", this.coord_x_objetivo);
+            content.put("y", this.coord_y_objetivo);
+        } catch (JSONException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        outbox.setContent(content.toString());
+        
+        this.send(outbox);
+    //    System.out.println("\nInformando al agente " + in.getSender().name + " donde esta el objetivo");
     }
     
         public void sendConversationID(ACLMessage msg) throws InterruptedException{
