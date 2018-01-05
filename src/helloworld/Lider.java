@@ -120,6 +120,9 @@ public class Lider extends SingleAgent{
                     case "envioCoordenadasObjetivo":
                         guardarCoordenadas(inbox);
                         break;
+                    case "askObjetivo":
+                        devolverCoordenadas(inbox);
+                        break;
                     case "sendKey":
                          sendConversationID(inbox);
                         break;
@@ -401,6 +404,20 @@ public class Lider extends SingleAgent{
     System.out.println("Tengo memoria");
           
   
+    }
+
+    private void devolverCoordenadas(ACLMessage inbox) {
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(inbox.getSender());      
+      
+        if(this.coord_x_objetivo != 0 && this.coord_y_objetivo != 0 ){
+             outbox.setPerformative(ACLMessage.INFORM);
+             outbox.setContent(this.coord_x_objetivo + "," + this.coord_y_objetivo);
+        }else{
+             outbox.setPerformative(ACLMessage.DISCONFIRM);
+        }
+         this.send(outbox);  
     }
     
     
