@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  *
@@ -27,7 +25,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Lider extends SingleAgent{
      
     private static Memoria memoria = new Memoria();
-    private final int limiteIDLE = 100; 
+    private final int limiteIDLE = 20; 
     private boolean finalizado;
     private int agentCount;
     private String conversationID;
@@ -61,6 +59,9 @@ public class Lider extends SingleAgent{
         this.finalizado = false;
     }
 
+    /**
+     * @author ruben, nacho, grego, dani, kudry
+     */
     @Override
     public void execute(){
 
@@ -183,7 +184,12 @@ public class Lider extends SingleAgent{
         System.out.println("Coordenada y del objetivo " + Integer.toString(objeto.get("y").asInt()));
     }
    
-        public void sendConversationID(ACLMessage msg) throws InterruptedException{
+    /**
+     * @author dani, kudry
+     * @param msg
+     * @throws InterruptedException 
+     */
+    public void sendConversationID(ACLMessage msg) throws InterruptedException{
 
         //  ACLMessage inbox = new ACLMessage();
           System.out.println("Mensaje recibido " + msg.getPerformative());
@@ -220,45 +226,49 @@ public class Lider extends SingleAgent{
     };
         
             
-        /**
-        * @author Dani
-        */
-        public void setDestinatario(String nombre){
-            outbox = new ACLMessage();
-            outbox.setSender(this.getAid());
-            outbox.setReceiver(new AgentID(nombre));   
-        };
-        
-        
-         /**
-        * @author Dani
-        */
-        public boolean cancel(){
-             
-            System.out.println("\n Enviando peticion de cancelacion");
-            setDestinatario("Bellatrix");
-            outbox.setPerformative(ACLMessage.CANCEL);
-            this.send(outbox);     
-               try {
-                   while (queue.isEmpty()){ Thread.sleep(1);}
-                   ACLMessage inb = queue.Pop();
-                  if (inb.getPerformativeInt() == ACLMessage.AGREE){
-                      System.out.println("AGREE " + inb.getContent());
-                  } 
-                  while (queue.isEmpty()){ Thread.sleep(1);}
-                    inb = queue.Pop(); 
-                   if (inb.getPerformativeInt() == ACLMessage.INFORM){
-                      System.out.println("INFORM " + inb.getContent());
-                       generarMapaTraza(inb);
-                  } 
-
-              } catch (InterruptedException ex) { 
-                  Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-              }
-        return true;  
+    /**
+    * @author Dani
+    */
+    public void setDestinatario(String nombre){
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(new AgentID(nombre));   
     };
-    
-        public void onMessage(ACLMessage msg)  {
+
+
+     /**
+    * @author Dani
+    */
+    public boolean cancel(){
+
+        System.out.println("\n Enviando peticion de cancelacion");
+        setDestinatario("Bellatrix");
+        outbox.setPerformative(ACLMessage.CANCEL);
+        this.send(outbox);     
+           try {
+               while (queue.isEmpty()){ Thread.sleep(1);}
+               ACLMessage inb = queue.Pop();
+              if (inb.getPerformativeInt() == ACLMessage.AGREE){
+                  System.out.println("AGREE " + inb.getContent());
+              } 
+              while (queue.isEmpty()){ Thread.sleep(1);}
+                inb = queue.Pop(); 
+               if (inb.getPerformativeInt() == ACLMessage.INFORM){
+                  System.out.println("INFORM " + inb.getContent());
+                   generarMapaTraza(inb);
+              } 
+
+          } catch (InterruptedException ex) { 
+              Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+          }
+    return true;  
+};
+
+    /**
+     * @author dani
+     * @param msg 
+     */
+    public void onMessage(ACLMessage msg)  {
         try {
             queue.Push(msg); // Cada mensaje nuevo que llega se encola en el orden de llegada
             System.out.println("\n["+this.getName()+"] Encolando: "+ msg.getPerformative() + " de " + msg.getSender().name );
@@ -300,6 +310,11 @@ public class Lider extends SingleAgent{
       
     }
 
+    /**
+     * @author  nacho, ruben, grego
+     * @param inb
+     * @return 
+     */
     private boolean comprobarMovimiento(ACLMessage inb) {
         String agent = inb.getSender().name;
         System.out.println("Movimiento recibido:" + inb.getContent());
@@ -334,29 +349,33 @@ public class Lider extends SingleAgent{
         return false;
     }
         
-     public void generarMapaTraza(ACLMessage inbox){
-        try {
-            System.out.println("Recibiendo traza");
-            JsonObject injson = Json.parse(inbox.getContent()).asObject();
-            JsonArray ja = injson.get("trace").asArray();
+    public void generarMapaTraza(ACLMessage inbox){
+       try {
+           System.out.println("Recibiendo traza");
+           JsonObject injson = Json.parse(inbox.getContent()).asObject();
+           JsonArray ja = injson.get("trace").asArray();
 
-            byte data[] = new byte [ja.size()];
-            for(int i = 0; i<data.length; i++){
-                data[i] = (byte) ja.get(i).asInt();
-            }
-            
-            FileOutputStream fos = new FileOutputStream("mitraza.png");
-            fos.write(data);
-            fos.close();
-            System.out.println("Traza Guardada en mitraza.png");
+           byte data[] = new byte [ja.size()];
+           for(int i = 0; i<data.length; i++){
+               data[i] = (byte) ja.get(i).asInt();
+           }
 
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
-        }
-      } 
+           FileOutputStream fos = new FileOutputStream("mitraza.png");
+           fos.write(data);
+           fos.close();
+           System.out.println("Traza Guardada en mitraza.png");
 
+       } catch (FileNotFoundException ex) {
+           Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (IOException ex) {
+           Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+       }
+     } 
+
+    /**
+     * @author ruben, nacho, grego, dani
+     * @param inbox 
+     */
     private void actualizarMapaLider(ACLMessage inbox) {
             
         System.out.println(inbox.getContent());
@@ -409,6 +428,10 @@ public class Lider extends SingleAgent{
   
     }
 
+    /**
+     * @author
+     * @param inbox 
+     */
     private void devolverCoordenadas(ACLMessage inbox) {
         outbox = new ACLMessage();
         outbox.setSender(this.getAid());
