@@ -6,7 +6,6 @@
 package helloworld;
 
 import java.util.ArrayList;
-import javafx.util.Pair;
 
 /**
  *
@@ -271,7 +270,7 @@ public class Memoria {
     }
     
     /*
-    * @author grego
+    * @author grego, ruben, nacho
     * actualiza el mapa
     * @param {movimiento a realizar} 
     * @param {nombre de agente Agente}
@@ -347,7 +346,7 @@ public class Memoria {
     }
     
     /**
-    * @author grego
+    * @author grego, nacho, ruben
     *
     *Visisualiza el mapa desde el centro de la memoria
     * @param a {Ancho ncasillar} 
@@ -373,7 +372,7 @@ public class Memoria {
     }
     
         /**
-    * @author grego
+    * @author grego, nacho, ruben
     *
     *Visisualiza el mapa desde el centro de la memoria
     * @param a {Ancho ncasillar} 

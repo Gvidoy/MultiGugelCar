@@ -16,7 +16,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  *
- * @author Dani
+ * @author Dani, ruben, nacho, grego, kudry
  */
 public class Helloworld {
 
