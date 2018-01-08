@@ -305,10 +305,21 @@ public class Memoria {
                 conRadarJ++; 
                 
             }
-            System.out.println();
+            //System.out.println();
             conRadarI++;
             conRadarJ = 0;     
         }
+        
+        int AuxX = 0;
+        int AuxY = 0;
+        
+        for (int i = 0; i < equipo.size(); i++){
+            AuxX = equipo.get(i).getX();
+            AuxY = equipo.get(i).getY();
+            
+            this.mapa.get(AuxY).set(AuxX, i+ 81);
+        }
+        
         System.out.println("He actualizado el mapa");
         //El id del agente en el mapa es el agente +10
         //int idAgente = 8;
@@ -380,12 +391,14 @@ public class Memoria {
     */
     public void verMapaCoche(String nombreAgente,int a, int l){
         
-        System.out.println("entro en verMapa");
+     
         int pos = this.buscarVehiculo(nombreAgente);
         
         int x = this.equipo.get(pos).getX();
         int y = this.equipo.get(pos).getY();
      
+        System.out.println("entro en verMapa con las coordenadas" + x + "," + y);
+        
         //Delimito el centro
         int L = l/2 + y;
         int A = a/2 + x;   
@@ -411,30 +424,75 @@ public class Memoria {
     * @author grego
     *
     *Obtiene un mapa parcial de memoria
-    * @param a {Ancho ncasillar} 
-    * @param l {Alto ncasillas}
-    * @param x {posicion en x desde conde obtener} 
-    * @param y {posicion en y desde conde obtener} 
-    * @return {tArrayList<ArrayList<Integer>>} mapa parcial
+     * @param nombre_agente
+    * @return {tArrayList<ArrayList<Integer>} mapa parcial
     */
-    public ArrayList<ArrayList<Integer>> obtenerMapaParcial(int x, int y,int a, int l){
+    public ArrayList<Integer> obtenerMapaParcial(String nombre_agente){
      
+        int pos = this.buscarVehiculo(nombre_agente);
+        int l = 20;
+        int a = 20;
+        int I = 0;
+        int J = 0;
+        int topeI = 0;
+        int topeJ = 0;
+        
+        int x = this.equipo.get(pos).getX();
+        int y = this.equipo.get(pos).getY();
+        
+        switch(this.getTipo(nombre_agente)){
+           case DRON:
+               a = 3;
+               l = 3;
+               I = y -1;
+               J = x -1;
+               topeI = y + 1;
+               topeJ = x + 1;        
+               
+               
+               break;
+           case COCHE:
+               a = 5;
+               l = 5;
+               I = y -2;
+               J = x -2;
+               topeI = y + 2;
+               topeJ = x + 2;  
+               
+               break;
+           case CAMION:
+               a = 11;
+               l = 11;
+               I = y - 5;
+               J = x - 5;
+               topeI = y + 5;
+               topeJ = x + 5;  
+               break;
+       } 
+        
+   
      
         //Delimito el centro
-        int L = l/2 + y;
-        int A = a/2 + x;
-        ArrayList<ArrayList<Integer>> recorte;
+        //int L = l/2 + y;
+        //int A = a/2 + x;
+        
+        ArrayList<Integer> recorte = new ArrayList();
        
-        recorte = new ArrayList<ArrayList<Integer>>();
+        //recorte = new ArrayList<ArrayList<Integer>>();
        
         //Cojo los datos del centro de la memoria
-        for(int i = y - l/2 ; i < L; i++){
-            recorte.add(new ArrayList<Integer>());
-            for (int j = x - a/2; j < A; j++){
-                recorte.get(i).add(mapa.get(i).get(j));
+        for(int i = I; i <= topeI; i++){
+            //recorte.add(new ArrayList<Integer>());
+            for (int j = J; j <= topeJ; j++){
+                recorte.add(mapa.get(i).get(j));
             }
         }
+        
+        System.out.println("El recorte tienen " + recorte.size());
+        
         return recorte;
+        
+        
     }
     
 }

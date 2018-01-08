@@ -33,7 +33,7 @@ import javafx.util.Pair;
  */
 public class Agente extends SingleAgent {
  
-    public static final String MAPA = "map3";
+    public static final String MAPA = "map5";
     private static String nombreLider = "Liderrr1";
     private ACLMessage outbox;
     private String conversationID;
@@ -64,6 +64,7 @@ public class Agente extends SingleAgent {
     private int contador_movimientos;
     private boolean movimiento_paralelo;
     private int c;
+    private ArrayList<ArrayList<Integer>> mapa_recorte;
     
     private boolean objetivo_encontrado;
     
@@ -105,6 +106,7 @@ public class Agente extends SingleAgent {
         this.c = 0;
         
         this.contador_movimientos = 0;
+        this.mapa_recorte = new ArrayList();
     }
    
     /**
@@ -115,6 +117,8 @@ public class Agente extends SingleAgent {
      
         if(!finalizado){
             try {
+                
+            int step = 0;
 
             if(!askForConversationID()){
                 Thread.sleep(3000);
@@ -127,44 +131,79 @@ public class Agente extends SingleAgent {
                 Thread.sleep(3000);
                 
                 enviar_datos_inicales();
+                
+                
 
-                System.out.println("-------------Procedemos a buscar el objetivo--------------------");
+                System.out.println("El agente " + this.getName() + " está BUSCANDO EL OBJETIVO...");
                 while(!objetivo_encontrado && !finalizado){
 
                     this.nuevaLogica();
                     this.doQuery_ref();
                     if(contador%10 == 0 && !objetivo_encontrado){
                         solicitarCoordenadasObjetivo();
-                        System.out.println("Solicitando coordenadas del objetivo");
+                        System.out.println("El agente " + this.getName() + " está SOLICITANDO LAS COORDENADAS AL LIDER...");
                     }
                     contador++;
                     System.out.println("----------------iteraciones: " + contador);
                     if(this.badp_count > 30){
                         ejecutarCancel();
                     }
+                   
                 }      
 
 
-                System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
+                //System.out.println("El objetivo se encuentra en las coordenadas: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ").");
 
-                while(!this.enObjetivo  && !finalizado){
-                    System.out.println("hacia el objetivo.");
-                    int indice_direccion = irHaciaObjetivo();
+                ArrayList<Integer> direcciones = new ArrayList();
+                
+                boolean objetivo_actualizado = false;
+                
+                boolean veo_vehiculo = false;
+                
+                while(!this.enObjetivo && step < 300){
+                    System.out.println("!!!!!!!!!!!!! [" + this.getName() + "] ESTOY YENDO HACIA EL OBJETIVO " + this.coord_x_objetivo + "," 
+                            + this.coord_y_objetivo + "!!!!!!!!!!!!!.");
+                    
+                    if(!objetivo_actualizado){
+                        // Intentamos actualizar el objetivo
+                        objetivo_actualizado = actualizarObjetivo();                        
+                    }
+                            
+                    direcciones = irHaciaObjetivo();
+            
+                    int indice_direccion = direcciones.get(0);
                     String next_move = this.traducirIndiceDireccion(indice_direccion);
-                    performMove(next_move);
+                    
+                    //if(veo_vehiculo){
+                        // Preguntamos al lider
+                        while(!askLider(next_move)){
+                            direcciones.remove(0);
+                            indice_direccion = direcciones.get(0);
+                            next_move = this.traducirIndiceDireccion(indice_direccion);
+                        }
+                    //}                    
+                    
+                    this.performMove(next_move);
+                    
                     this.doQuery_ref();
                     if(this.badp_count > 30){
                           ejecutarCancel();
                     }
+                    
+                    step++;
+                    System.out.println("[" + this.getName() + "] STEP NUMERO " + step);
                 }
                 
-            ejecutarCancel();
+                System.out.println("!!!!!!! [" + this.getName() + "] HE LLEGADO AL OBJETIVOOO. ENVIO LAS COORDENADAS!!!!!!");
+                              
+                System.out.println("!!!!!! LAS COORDENADAS DEL OBJETIVO SON: " + this.coord_x_objetivo + "," + this.coord_y_objetivo);
+                ejecutarCancel();
 
             } catch (InterruptedException | JSONException ex) {
                 Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
 
             }
-            System.out.println("Agente [" +this.getName()+ "] finalizado.");
+            //System.out.println("Agente [" +this.getName()+ "] finalizado.");
         }
        
 }
@@ -207,37 +246,37 @@ public class Agente extends SingleAgent {
         if(this.coord_x_objetivo < centro){
             if(this.coord_y_objetivo < centro){
                 // EL OBJETIVO SE ENCUENTRA EN EL PRIMER CUADRANTE
-                System.out.println("El objetivo se encuentra en el PRIMER CUADRANTE");
+                //System.out.println("El objetivo se encuentra en el PRIMER CUADRANTE");
                 this.coord_x_objetivo = this.x - centro + x_local;
                 this.coord_y_objetivo = this.y - centro + y_local;
             } else if(this.coord_y_objetivo > centro){
                 // EL OBJETIVO SE ENCUENTRA EN EL TERCER CUADRANTE
-                System.out.println("El objetivo se encuentra en el TERCER CUADRANTE");
+                //System.out.println("El objetivo se encuentra en el TERCER CUADRANTE");
                 this.coord_x_objetivo = this.x - centro + x_local;
                 this.coord_y_objetivo = this.y - centro + y_local;
             }
         } else if(this.coord_x_objetivo > centro){
             if(this.coord_y_objetivo < this.y){
                 // EL OBJETIVO SE ENCUENTRA EN EL SEGUNDO CUADRANTE
-                System.out.println("El objetivo se encuentra en el SEGUNDO CUADRANTE");
+                //System.out.println("El objetivo se encuentra en el SEGUNDO CUADRANTE");
                 this.coord_x_objetivo = this.x - centro + x_local;
                 this.coord_y_objetivo = this.y - centro + y_local;
             } else if(this.coord_y_objetivo > centro){
                 // EL OBJETIVO SE ENCUENTRA EN EL CUARTO CUADRANTE
-                System.out.println("El objetivo se encuentra en el CUARTO CUADRANTE");
+                //System.out.println("El objetivo se encuentra en el CUARTO CUADRANTE");
                 this.coord_x_objetivo = this.x - centro + x_local;
                 this.coord_y_objetivo = this.y - centro + y_local;
             }
         } else if(this.coord_x_objetivo == centro){
             // EL OBJETIVO SE ENCUENTRA EN LA MISMA COLUMNA QUE EL VEHICULO
-            System.out.println("El objetivo se encuentra en LA MISMA COLUMNA QUE EL VEHICULO");
+            //System.out.println("El objetivo se encuentra en LA MISMA COLUMNA QUE EL VEHICULO");
             this.coord_x_objetivo = this.x;
             this.coord_y_objetivo = this.y - centro + y_local;
         }
         
         if(this.coord_y_objetivo == centro){
             // EL OBJETIVO SE ENCUENTRA EN LA MISMA FILA QUE EL VEHICULO
-            System.out.println("El objetivo se encuentra en LA MISMA FILA QUE EL VEHICULO");
+            //System.out.println("El objetivo se encuentra en LA MISMA FILA QUE EL VEHICULO");
             this.coord_x_objetivo = this.x - centro + x_local;
             this.coord_y_objetivo = this.y;
         }
@@ -273,11 +312,17 @@ public class Agente extends SingleAgent {
      */
     private void enviarCoordenadasObjetivo(){
         
-        System.out.println("El objetivo ha sido encontrado. Enviando las coordenadas al lider...");
+        System.out.println("He llegado al objetivo. Enviando las coordenadas al lider...");
         
         ACLMessage out = new ACLMessage();
         out.setSender(this.getAid());
         out.setReceiver(new AgentID(Agente.nombreLider));
+        
+        // Buscamos la primera posicion en la que se encuentra un 3. Se almacenan la 'x' y la 'y' local del objetivo
+        this.objetivoAlAlcance();
+        
+        // Transformamos la 'x' y la 'y' local en coordenadas absolutas
+        this.obtenerCoordenadasObjetivo();
         
         JSONObject content = new JSONObject();
         
@@ -350,7 +395,7 @@ public class Agente extends SingleAgent {
      * @return 
      */
     private boolean askLider(String move){
-        System.out.println("llego a enviar al lider");
+        //System.out.println("llego a enviar al lider");
         setDestinatario(this.nombreLider);
         outbox.setConversationId("solicitarMovimiento");
         outbox.setInReplyTo(reply_withID);
@@ -426,7 +471,7 @@ public class Agente extends SingleAgent {
         outbox.setContent(jsonLogin.toString());
         outbox.setPerformative(ACLMessage.SUBSCRIBE);  
         this.send(outbox);     
-        System.out.println("\n["+this.getName()+"] Mensaje: "+ outbox.getPerformative() + " enviado");
+        //System.out.println("\n["+this.getName()+"] Mensaje: "+ outbox.getPerformative() + " enviado");
 
           try {
               
@@ -434,13 +479,13 @@ public class Agente extends SingleAgent {
                    Thread.sleep(1);
                 };
                  ACLMessage inb = queue.Pop();
-                System.out.println("\n["+this.getName()+"] Mensaje : "+ inb.getPerformative() + " Recibido");           
+                //System.out.println("\n["+this.getName()+"] Mensaje : "+ inb.getPerformative() + " Recibido");           
               if (inb.getPerformativeInt() == ACLMessage.FAILURE || inb.getPerformativeInt() == ACLMessage.NOT_UNDERSTOOD  ){
-                  System.out.println("Failure: " + inb.getContent() + " - " + this.getName());        
+                  //System.out.println("Failure: " + inb.getContent() + " - " + this.getName());        
               }
               if (inb.getPerformativeInt() == ACLMessage.INFORM){
                   this.conversationID = inb.getConversationId();
-                  System.out.println("Aceptada " + this.conversationID + " - " + this.getName());
+                  //System.out.println("Aceptada " + this.conversationID + " - " + this.getName());
                   enviar_clave_lider();
                 
               }
@@ -466,7 +511,7 @@ public class Agente extends SingleAgent {
             Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        System.out.println("Enviando checkin...");
+        //System.out.println("Enviando checkin...");
       
         setDestinatario("Bellatrix");
         outbox.setConversationId(this.conversationID);
@@ -478,13 +523,13 @@ public class Agente extends SingleAgent {
               
                 while (queue.isEmpty()){Thread.sleep(1);}; 
                 ACLMessage inb = queue.Pop();
-                System.out.println("MENSAJER COMPLETO: " +
-                   "Conversation ID: " + inb.getConversationId()
-                   + " SENDER: " + inb.getSender().name
-                   + " REPLY WITH: " + inb.getReplyWith()
-                   + "Performativa: " + inb.getPerformative()
+//                //System.out.println("MENSAJER COMPLETO: " +
+//                   "Conversation ID: " + inb.getConversationId()
+//                   + " SENDER: " + inb.getSender().name
+//                   + " REPLY WITH: " + inb.getReplyWith()
+//                   + "Performativa: " + inb.getPerformative()
                          
-                );
+               // );
                 
             switch (inb.getPerformativeInt()) {
                 case ACLMessage.FAILURE:
@@ -504,7 +549,7 @@ public class Agente extends SingleAgent {
                     } else {
                     } break;
                 default:
-                    System.out.println("No es de ningun tipo");
+                    //System.out.println("No es de ningun tipo");
                     break;
             }
           } catch (InterruptedException ex) {
@@ -548,7 +593,7 @@ public class Agente extends SingleAgent {
 
               }
               if (inbox.getPerformativeInt() == ACLMessage.INFORM){
-                  System.out.println(" - INFORM: " + inbox.getContent());     
+                  //System.out.println(" - INFORM: " + inbox.getContent());     
                   this.reply_withID = inbox.getReplyWith();
               } 
           } catch (InterruptedException ex) {
@@ -637,7 +682,7 @@ public class Agente extends SingleAgent {
             
             else if (inbox.getPerformativeInt() == ACLMessage.INFORM){ 
 
-                System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
+                //System.out.println("INFORM: " + inbox.getContent() + " con REPLY-ID: " + inbox.getReplyWith()); 
                 this.reply_withID = inbox.getReplyWith();
 
                 JSONObject json = new JSONObject(inbox.getContent());
@@ -653,7 +698,7 @@ public class Agente extends SingleAgent {
                 System.out.println("Datos guardados: battery: " + this.battery + " x: " +this.x + " y: " + this.y );
 
                 if(!"".equals(this.last_move)){
-                    System.out.println("Hacemos peticion para actualizar mapa");
+                    //System.out.println("Hacemos peticion para actualizar mapa");
 
                     setDestinatario(Agente.nombreLider);
                     outbox.setPerformative(ACLMessage.INFORM);  
@@ -663,7 +708,7 @@ public class Agente extends SingleAgent {
                     while (queue.isEmpty()){Thread.sleep(1);};
                     ACLMessage inb = queue.Pop();
                     if (inb.getPerformativeInt() == ACLMessage.INFORM ){
-                        System.out.println("Se ha actualizado el mapa en agente y lider");
+                        //System.out.println("Se ha actualizado el mapa en agente y lider");
                     }
                 }
 
@@ -699,7 +744,7 @@ public class Agente extends SingleAgent {
         
         // Mostramos los datos proporcionados por los sensores
         System.out.println("Los datos recibidos son: ");
-        System.out.println("\n Radar: ");
+        System.out.println("[" + this.getName() +  "]\n Radar: ");
         
         sensor = new ArrayList<ArrayList<Integer>>();
        
@@ -847,6 +892,8 @@ public class Agente extends SingleAgent {
     private void nuevaLogica() throws InterruptedException {
         
         String next_move = ""; 
+        ArrayList<Integer> direcciones = new ArrayList();
+        Integer indice_direccion = null;
 	
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
 	if(this.battery <= 10)
@@ -863,24 +910,21 @@ public class Agente extends SingleAgent {
 
         if(this.objetivo_encontrado){
             
-            System.out.println("OBJETIVO ENCONTRADO!!!");
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!![" + this.getName() + "] OBJETIVO ENCONTRADO. VOY AL OBJETIVO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             
-            System.out.println("Las coordenadas locales del objetivo son: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ")");
+            // Traducimos las coordenadas locales del objetivo en absolutas y nos dirigimos hacia el
+            this.obtenerCoordenadasObjetivo();
             
-            // TRANSFORMAR LAS COORDENADAS DEL OBJETIVO EN VALORES ABSOLUTOS
-            System.out.println("Transformando las coordenadas del objetivo...");
-            obtenerCoordenadasObjetivo();
-                       
-            System.out.println("Las coordenadas absolutas del objetivo son: (" + this.coord_x_objetivo + "," + this.coord_y_objetivo + ")");
-            
-            // Notificamos al lider que hemos encontrado el objetivo y nos dirigimos hacia el
-
-            // NOTIFICAR AL LIDER DE LAS COORDENADAS ABSOLUTAS DEL OBJETIVO
-            enviarCoordenadasObjetivo();
+            System.out.println("!!!!! MANDO LAS COORDENADAS AL LIDER Y ME ESTOY DIRIGIENDO HACIA EL PUNTO: " + this.coord_x_objetivo + "," + this.coord_y_objetivo);
             
             // FIN DE LA BUSQUEDA DEL OBJETIVO
+            
+            // Mandamos las coordenadas del objetivo al lider
+            enviarCoordenadasObjetivo();
 
-            int indice_direccion = irHaciaObjetivo();
+            direcciones = irHaciaObjetivo();
+            
+            indice_direccion = direcciones.get(0);
             next_move = this.traducirIndiceDireccion(indice_direccion);
         }
         else {
@@ -926,12 +970,16 @@ public class Agente extends SingleAgent {
                         //int p = this.buscarLimite();
                 
                         if((lectura == 1 && (this.tipoVehiculo == TipoVehiculo.COCHE 
-                                || this.tipoVehiculo == TipoVehiculo.CAMION))  || lectura == 2)
+                                || this.tipoVehiculo == TipoVehiculo.CAMION))  
+                                || lectura == 2)
                             posibles_movimientos[aux] = false;
                         
-                        //if(p != -1){
-                        //    posibles_movimientos[p] = false;
-                        //}
+                        if(lectura == 4){
+                            System.out.println("!!!!!!!!!! HE ENCONTRADO UN VEHICULO ANTES DEL OBJETIVO. VOY A CHOCAAAAR"
+                                    + " !!!!!!!!!!!");
+                            posibles_movimientos[aux] = false;
+                        }
+                        
                         aux++;
                     }
                 }
@@ -946,12 +994,7 @@ public class Agente extends SingleAgent {
                 
                 if(this.indice_ultima_direccion == 1 || this.indice_ultima_direccion == 6)
                     this.c++;
-                //this.contador_movimientos++;
-                // Se ejecuta si no estoy haciendo movimientos paralelos y cuando estoy haciendo movimientos paralelos y no me he pasado del contador
-                //if(!this.movimiento_paralelo || (this.movimiento_paralelo && this.contador_movimientos < this.range)){
-                //    next_move = this.traducirIndiceDireccion(this.indice_ultima_direccion);
-                //    this.contador_movimientos++;
-                //}
+                
             } else {
                 
                 this.c = 0;
@@ -961,9 +1004,8 @@ public class Agente extends SingleAgent {
                     posibles_movimientos[7-this.indice_ultima_direccion] = false;
                 }
             
-                Integer indice_direccion = null;
                 boolean encontrado = false;
-                ArrayList<Integer> direcciones = new ArrayList();
+                direcciones = new ArrayList();
         
                 for (int i=0; i < posibles_movimientos.length; i++){
                     if(posibles_movimientos[i] == true){
@@ -1013,37 +1055,6 @@ public class Agente extends SingleAgent {
                         this.contador_movimientos = 0;
                     }
                 }
-                /*if(punto_cardinal > 0){
-                    switch(punto_cardinal){
-                        case 1:
-                            this.contador_movimientos = 0;
-                            next_move = "moveS";
-                            this.indice_ultima_direccion = 6;
-                            this.movimiento_paralelo = true;
-                            break;
-                        case 4:
-                            this.contador_movimientos = 0;
-                            next_move = "moveW";
-                            this.indice_ultima_direccion = 3;
-                            this.movimiento_paralelo = true;
-                            break;
-                        case 3:
-                            this.contador_movimientos = 0;
-                            this.indice_ultima_direccion = 4;
-                            next_move = "moveE";
-                            this.movimiento_paralelo = true;
-                        case 6:
-                            this.contador_movimientos = 0;
-                            this.indice_ultima_direccion = 1;
-                            next_move = "moveN";
-                            this.movimiento_paralelo = true;
-                            break;
-                        case -1:
-                            next_move = traducirIndiceDireccion(indice_direccion);
-                            this.indice_ultima_direccion = indice_direccion;
-                            break;
-                    }
-                }*/
             }
         }
         
@@ -1053,16 +1064,23 @@ public class Agente extends SingleAgent {
         if(this.contador %10 == 0){
             preguntarSiHayObjetivo();
         }
-        if(askLider(next_move))
-            this.performMove(next_move);
+        
+        while(!askLider(next_move)){
+            direcciones.remove(0);
+            indice_direccion = direcciones.get(0);
+            next_move = this.traducirIndiceDireccion(indice_direccion);
+        }
+        
+        this.performMove(next_move);
+        this.last_move = "last";
     }
 
     /**
      * @author ruben, grego, nacho
-     * @return 
+     *  
      */
-    private int irHaciaObjetivo() {
-        
+    private ArrayList<Integer> irHaciaObjetivo() {
+        ArrayList<Integer> direcciones = new ArrayList();
         
         // ESTRATEGIA de REFUEL. basica, habra que MODIFICARLA
 	if(this.battery <= 10){
@@ -1077,52 +1095,181 @@ public class Agente extends SingleAgent {
             
             // Estamos a la IZQ del objetivo
             if(this.y < this.coord_y_objetivo){
+                
                 // Estamos ENCIMA del objetivo. Nos movemos hacia el SE
                 System.out.println("La direccion escogida es SE");
-                return 7;
+                direcciones.add(7);
+                direcciones.add(6);
+                direcciones.add(4);
+                direcciones.add(5);
+                direcciones.add(2);
+                direcciones.add(3);
+                direcciones.add(1);
+                
+                direcciones.add(0);
             } else if(this.y > this.coord_y_objetivo){
+                
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el NE
                 System.out.println("La direccion escogida es NE");
-                return 2;
+                direcciones.add(2);
+                direcciones.add(1);
+                direcciones.add(4);
+                direcciones.add(7);
+                direcciones.add(0);
+                direcciones.add(3);
+                direcciones.add(6);
+                
+                direcciones.add(5);
             } else {
+                
                 // Estamos en la misma fila que el objetivo. Nos movemos hacia el E
                 System.out.println("La direccion escogida es E");
-                return 4;
+                direcciones.add(4);
+                direcciones.add(2);
+                direcciones.add(7);
+                direcciones.add(6);
+                direcciones.add(1);
+                direcciones.add(5);
+                direcciones.add(0);
+                
+                direcciones.add(3);
             }
         } else if(this.x > this.coord_x_objetivo){
             
             // Estamos a la DER del objetivo.
             if(this.y < this.coord_y_objetivo){
+                
                 // Estamos ENCIMA del objetivo. Nos movemos hacia el SW
                 System.out.println("La direccion escogida es SW");
-                return 5;
+                direcciones.add(5);
+                direcciones.add(6);
+                direcciones.add(3);
+                direcciones.add(0);
+                direcciones.add(7);
+                direcciones.add(1);
+                direcciones.add(4);
+                
+                direcciones.add(2);
             } else if(this.y > this.coord_y_objetivo){
+                
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el NW
                 System.out.println("La direccion escogida es NW");
-                return 0;
+                direcciones.add(0);
+                direcciones.add(1);
+                direcciones.add(3);
+                direcciones.add(2);
+                direcciones.add(5);
+                direcciones.add(4);
+                direcciones.add(6);
+                
+                direcciones.add(7);
             } else {
+                
                 // Estamos en la misma fila que el objetivo. Nos movemos hacia el W
                 System.out.println("La direccion escogida es W");
-                return 3;
+                direcciones.add(3);
+                direcciones.add(0);
+                direcciones.add(5);
+                direcciones.add(1);
+                direcciones.add(6);
+                direcciones.add(2);
+                direcciones.add(7);
+                
+                direcciones.add(4);
             }
         } else {
             
             // Estamos en la MISMA COLUMNA que el objetivo.
             if(this.y < this.coord_y_objetivo){
+                
                 // Estamos POOOOOOR ENCIMA del objetivo. Nos movemos hacia el S
                 System.out.println("La direccion escogida es S");
-                return 6;
+                direcciones.add(6);
+                direcciones.add(5);
+                direcciones.add(7);
+                direcciones.add(3);
+                direcciones.add(4);
+                direcciones.add(0);
+                direcciones.add(2);
+                
+                direcciones.add(1);                
             } else if(this.y > this.coord_y_objetivo){
+                
                 // Estamos DEBAJO del objetivo. Nos movemos hacia el N
                 System.out.println("La direccion escogida es N");
-                return 1;
+                direcciones.add(1);
+                direcciones.add(0);
+                direcciones.add(2);
+                direcciones.add(3);
+                direcciones.add(4);
+                direcciones.add(5);
+                direcciones.add(7);
+                
+                direcciones.add(6);
             } else {
                 this.enObjetivo = true;
-                System.out.println("En objetivoo!!!!!");
+                System.out.println("!!!!!!!!!!!!!!! EN OBJETIVOOOOO !!!!!!!!!!!!!!!");
             }
         }
         
-        return -1;
+        int inicio = 0, fin = 0, centro = 0;
+        boolean posibles_movimientos[] = new boolean[8];
+        //int aux = 0;
+        
+        for(int i=0; i < 8; i++){
+            posibles_movimientos[i] = true;
+        }
+        
+        switch(this.tipoVehiculo){
+                case DRON:
+                    inicio = 0;
+                    fin = 2;
+                    centro = 1;
+                    break;
+                case COCHE:
+                    inicio = 1;
+                    fin = 3;
+                    centro = 2;
+                    break;
+                case CAMION:
+                    inicio = 4;
+                    fin = 6;
+                    centro = 5;
+                    break;
+            }
+            
+            int aux = 0;
+        
+            for(int i = inicio; i <= fin; i++){
+                for(int j = inicio; j <= fin; j++){
+                
+                    if(i != centro || j != centro){
+                        int lectura = this.sensor.get(i).get(j);
+                        //int p = this.buscarLimite();
+                
+                        if((lectura == 1 && (this.tipoVehiculo == TipoVehiculo.COCHE 
+                                || this.tipoVehiculo == TipoVehiculo.CAMION))  || lectura == 2 || lectura == 4)
+                            posibles_movimientos[aux] = false;
+                        
+                        //if(p != -1){
+                        //    posibles_movimientos[p] = false;
+                        //}
+                        aux++;
+                    }
+                }
+            }
+        
+        Iterator<Integer> it = direcciones.iterator();
+                
+        while(it.hasNext()){
+            Integer i = it.next();
+            
+            if(posibles_movimientos[i] == false){
+                it.remove();
+            }
+        }
+        
+        return direcciones;
     }
     
     /**
@@ -1194,10 +1341,136 @@ public class Agente extends SingleAgent {
                this.coord_x_objetivo = Integer.parseInt(data[0]);
                this.coord_y_objetivo = Integer.parseInt(data[1]);
                this.objetivo_encontrado = true;
-                System.out.println("TENGO COORDENADAS DE OTRO AGENTE");
+               System.out.println("TENGO COORDENADAS DE OTRO AGENTE");
             break;
         }
 
+    }
+
+    private boolean actualizarObjetivo() {
+        
+        boolean encontrado = false;
+        
+        //Recorremos el sensor en busca de un 3
+        for(int i=0; i < this.range && !encontrado; i++){
+            for(int j=0; j < this.range && !encontrado; j++){
+                int lectura = this.sensor.get(i).get(j);
+                
+                if(lectura == 3){
+                    encontrado = true;
+                    //this.coord_x_objetivo = j;
+                    //this.coord_y_objetivo = i;
+                }
+            }
+        }
+
+        // Tenemos las locales, las transformamos a las absolutas
+        if(encontrado){
+            System.out.println("HE ENCONTRADO UN 3 LOCAL. PIDO EL MAPA AL LIDER...");
+            this.pedirMapa();
+            encontrado = false;
+            for(int i=0; i < this.range && !encontrado; i++){
+                for(int j=0; j < this.range && !encontrado; j++){
+                    int lectura = this.mapa_recorte.get(i).get(j);
+
+                    if(lectura == 3){
+                        encontrado = true;
+                        this.coord_x_objetivo = j;
+                        this.coord_y_objetivo = i;
+                    }
+                }
+            }
+            
+            if(encontrado){
+                this.obtenerCoordenadasObjetivo();
+                System.out.println("!!!! HE ACTUALIZADO EL OBJETIVO. LAS NUEVAS COORDENADAS SON: " + this.coord_x_objetivo + "," + this.coord_y_objetivo);
+            }
+        }
+        
+        return encontrado;
+    }
+
+    private boolean buscarVehiculo() {
+        boolean encontrado = false;
+        
+        // Recorremos el sensor en busca de un 4
+        for(int i=0; i < this.range && !encontrado; i++){
+            for(int j=0; j < this.range && !encontrado; j++){
+                int lectura = this.sensor.get(i).get(j);
+                
+                if((i != this.centro_mapa || j != this.centro_mapa) && lectura == 4){
+                    encontrado = true;
+                }
+            }
+        }
+        
+        // Tenemos las locales, las transformamos a las absolutas
+        if(encontrado){
+            //this.obtenerCoordenadasObjetivo();
+            System.out.println("!!!!!!!!!!!!!!!!!!!!! HE ENCONTRADO UN VEHICULO !!!!!!!!!!!!!!!!!");
+        }
+        
+        return encontrado;
+    }
+
+    private void pedirMapa() {
+        
+        this.setDestinatario(Agente.nombreLider);
+        //this.outbox.setSender(new AgentID(this.getAid().name));
+        //this.outbox.setReceiver(new AgentID(Agente.nombreLider));
+        this.outbox.setPerformative(ACLMessage.QUERY_REF);
+        this.outbox.setConversationId("pedirMapa");
+        this.send(this.outbox);
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            
+            while(this.queue.isEmpty()){
+                Thread.sleep(1);
+            }
+            
+            inbox = this.queue.Pop();
+            
+            int performativa = inbox.getPerformativeInt();
+            
+            switch(performativa){
+                case ACLMessage.INFORM:
+                    System.out.println("Mapa recibido del Lider!");
+                    
+                    //JsonObject objeto = Json.parse(inbox.getContent()).asObject();
+                    //JsonArray vector = objeto.get("mapa").asArray();
+                    String[] a = inbox.getContent().split("-");
+                    int cont = 0;
+                    
+                    for(int i = 0; i < this.range; i++){
+                        this.mapa_recorte.add(new ArrayList());
+                        for(int j = 0; j < this.range; j++){
+                            this.mapa_recorte.get(i).add(Integer.parseInt(a[cont]));
+                            cont++;
+                        }
+                    }
+                    
+                    System.out.println("Imprimimos el mapa recibido del lider...");
+                    
+                    for(int i = 0; i < this.range; i++){
+                        //System.out.printf("Fila " + i + ": ");
+                        for(int j = 0; j < this.range; j++){
+                            System.out.printf(this.mapa_recorte.get(i).get(j) + " ");
+                        }
+                        
+                        System.out.println();
+                    }
+                    
+                    break;
+                case ACLMessage.FAILURE:
+                    System.out.println("ERROR. El lider no quiere enviar el mapa.");
+                    
+                    break;
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Agente.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

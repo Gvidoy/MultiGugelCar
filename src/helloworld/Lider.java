@@ -23,9 +23,13 @@ import java.util.logging.Logger;
  * @author nacho, ruben
  */
 public class Lider extends SingleAgent{
+    
+    private String mapa = "map5";
+
+    
      
-    private static Memoria memoria = new Memoria();
-    private final int limiteIDLE = 20; 
+    private Memoria memoria = new Memoria();
+    private final int limiteIDLE = 150; 
     private boolean finalizado;
     private int agentCount;
     private String conversationID;
@@ -34,6 +38,8 @@ public class Lider extends SingleAgent{
     private int coord_x_objetivo;
     private int coord_y_objetivo;
     private int cancelCount;
+//    private boolean cerrojo;
+//    private String obrera_buscadora;
 
     /**funciones
      * - Enviar mapa tamaño n
@@ -57,6 +63,8 @@ public class Lider extends SingleAgent{
         this.coord_x_objetivo = 0;
         this.coord_y_objetivo = 0;
         this.finalizado = false;
+//        this.cerrojo = false;
+//        this.obrera_buscadora = null;
     }
 
     /**
@@ -75,7 +83,7 @@ public class Lider extends SingleAgent{
             
                 System.out.println("["+this.getName()+"] Iddle " + cont);
                 try {
-                    Thread.sleep(500); // Espera 1 segundo hasta siguiente chequeo
+                    Thread.sleep(100); // Espera 1 segundo hasta siguiente chequeo
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -101,7 +109,7 @@ public class Lider extends SingleAgent{
                         break;
                     case "solicitarMovimiento":
                         if(inbox.getPerformativeInt() == ACLMessage.QUERY_IF){
-                            System.out.println("Se ha solicitado una peticion de movimiento");
+                            //System.out.println("Se ha solicitado una peticion de movimiento");
                             memoria.verMapaCoche(inbox.getSender().name, 20, 20);
                             
                             boolean answer = comprobarMovimiento(inbox);
@@ -147,7 +155,24 @@ public class Lider extends SingleAgent{
                        }
                       
                      
-                    break;
+                        break;
+                    case "pedirMapa":
+                        
+                        System.out.println("!!!!!!!! HE RECIBIDO LA PETICION DEL MAPA DEL VEHICULO!!!!!");
+                        // El vehiculo nos ha pedido un pedazo de mapa
+                        
+                        if(inbox.getPerformativeInt() == ACLMessage.QUERY_REF){
+                         String a = this.enviarMapa(inbox);
+                            
+                       outbox = new ACLMessage();
+                       outbox.setSender(this.getAid());
+                       outbox.setPerformative(ACLMessage.INFORM);
+                       outbox.setReceiver(inbox.getSender()); 
+                       outbox.setContent(a);
+                       this.send(outbox);
+                        }
+                        
+                        break;
                     default:
                         break;
                         
@@ -282,32 +307,37 @@ public class Lider extends SingleAgent{
      */
     private void recibirDatosIniciales(ACLMessage msg) {
        
-        System.out.println("Mensaje recividoloo de " + msg.getSender().getLocalName() + " " + msg.getPerformative() + " ID " + msg.getConversationId()); 
+        System.out.println("Mensaje recivido de " + msg.getSender().getLocalName() + " " + msg.getPerformative() + " ID " + msg.getConversationId()); 
 
-          String mensaje = msg.getContent();
+        String mensaje = msg.getContent();
           
-          String[] partes = mensaje.split(",");
-          int xv =  Integer.parseInt(partes[0]);
-          int yv =  Integer.parseInt(partes[1]);
+        String[] partes = mensaje.split(",");
+        int xv =  Integer.parseInt(partes[0]);
+        int yv =  Integer.parseInt(partes[1]);
   
-          TipoVehiculo tipo = TipoVehiculo.COCHE;
-          switch(partes[2]){
-              case "DRON":
-                  tipo = TipoVehiculo.DRON;
-              break;
-              case "CAMION":
-                  tipo = TipoVehiculo.CAMION;
-              break;
-          }
-          memoria.addVehiculo(xv,yv,msg.getSender().getLocalName(),tipo);
-            outbox = new ACLMessage();
-            outbox.setSender(this.getAid());
-            outbox.setPerformative(ACLMessage.INFORM);
-            outbox.setReceiver(msg.getSender());      
-            this.send(outbox);
-
-  
-      
+        TipoVehiculo tipo = TipoVehiculo.COCHE;
+        
+        switch(partes[2]){
+            case "DRON":
+                tipo = TipoVehiculo.DRON;
+                break;
+            case "CAMION":
+                tipo = TipoVehiculo.CAMION;
+                break;
+        }
+          
+        memoria.addVehiculo(xv,yv,msg.getSender().getLocalName(),tipo);
+        
+//        if(tipo == TipoVehiculo.DRON && !this.cerrojo){
+//            this.cerrojo = true;
+//            this.obrera_buscadora = msg.getSender().getLocalName();
+//        }
+        
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setPerformative(ACLMessage.INFORM);
+        outbox.setReceiver(msg.getSender());      
+        this.send(outbox);
     }
 
     /**
@@ -316,37 +346,115 @@ public class Lider extends SingleAgent{
      * @return 
      */
     private boolean comprobarMovimiento(ACLMessage inb) {
+        
+//        // El primer filtro es si es nuestro zangano o no
+//        if(inb.getSender().getLocalName().equals(this.obrera_buscadora) && this.cerrojo){
+//            return true;
+//        }
+//        
+//        if(!this.cerrojo){
+//            
+//        }
+        
+        String movimiento = inb.getContent();
         String agent = inb.getSender().name;
-        System.out.println("Movimiento recibido:" + inb.getContent());
-        switch(inb.getContent()){
-            case "moveS":
-             if(memoria.getS(agent) <= 0 || memoria.getS(agent) == 3){return true;};
-            break;
-            case "moveN":
-             if(memoria.getN(agent) <= 0 || memoria.getN(agent) == 3){return true;};
-            break;
-            case "moveSW":
-             if(memoria.getSW(agent) <= 0 || memoria.getSW(agent) == 3){return true;};
-            break;
-            case "moveSE":
-             if(memoria.getSE(agent) <= 0 || memoria.getSE(agent) == 3){return true;};
-            break;
-            case "moveNE":
-             if(memoria.getNE(agent) <= 0 || memoria.getNE(agent) == 3){return true;};
-            break;
-            case "moveNW":
-             if(memoria.getNW(agent) <= 0 || memoria.getNW(agent) == 3){return true;};
-            break;
-            case "moveW":
-             if(memoria.getW(agent) <= 0 || memoria.getW(agent) == 3){return true;};
-            break;
-            case "moveE":
-             if(memoria.getE(agent) <= 0 || memoria.getE(agent) == 3){return true;};
-            break;
-        }
-
-        if(memoria.getTipo(agent) == TipoVehiculo.DRON){ return true;};
-        return false;
+        boolean puede = false;
+        
+        System.out.println("Movimiento recibido:" + movimiento);
+        
+        if(memoria.getTipo(agent) == TipoVehiculo.DRON){
+            // Logica para el DRON. El DRON se movera siempre que no haya otro vehiculo en la casilla
+            // y no sea el borde del mundo
+            switch(movimiento){
+                case "moveS":
+                    if(memoria.getS(agent) < 81 && memoria.getS(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveN":
+                    if(memoria.getN(agent) < 81 && memoria.getN(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveSW":
+                    if(memoria.getSW(agent) < 81 && memoria.getSW(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveSE":
+                    if(memoria.getSE(agent) < 81 && memoria.getSE(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveNE":
+                    if(memoria.getNE(agent) < 81 && memoria.getNE(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveNW":
+                    if(memoria.getNW(agent) < 81 && memoria.getNW(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveW":
+                    if(memoria.getW(agent) < 81 && memoria.getW(agent) != 2)
+                        puede = true;
+                    
+                    break;
+                case "moveE":
+                    if(memoria.getE(agent) < 81 && memoria.getE(agent) != 2)
+                        puede = true;
+                    
+                    break;
+            }
+        } else {
+            // Logica para el resto de vehiculos. El resto de vehiculos se podran mover siempre
+            // que sea un pedazo de mapa no descubierto o si es objetivo
+            switch(inb.getContent()){
+                case "moveS":
+                    if(memoria.getS(agent) <= 0 || memoria.getS(agent) == 3)
+                        return true;
+                    
+                    break;
+                case "moveN":
+                    if(memoria.getN(agent) <= 0 || memoria.getN(agent) == 3)
+                        return true;
+                    
+                    break;
+                case "moveSW":
+                    if(memoria.getSW(agent) <= 0 || memoria.getSW(agent) == 3)
+                        return true;
+                    
+                    break;
+                case "moveSE":
+                    if(memoria.getSE(agent) <= 0 || memoria.getSE(agent) == 3)
+                        return true;
+                
+                    break;
+                case "moveNE":
+                    if(memoria.getNE(agent) <= 0 || memoria.getNE(agent) == 3)
+                        return true;
+                
+                    break;
+                case "moveNW":
+                    if(memoria.getNW(agent) <= 0 || memoria.getNW(agent) == 3)
+                        return true;
+                
+                    break;
+                case "moveW":
+                    if(memoria.getW(agent) <= 0 || memoria.getW(agent) == 3)
+                        return true;
+                    
+                    break;
+                case "moveE":
+                    if(memoria.getE(agent) <= 0 || memoria.getE(agent) == 3)
+                        return true;
+                
+                    break;
+            } // FIN DEL SWITCH
+        } // FIN DEL ELSE
+        
+        return puede;
     }
         
     public void generarMapaTraza(ACLMessage inbox){
@@ -360,7 +468,7 @@ public class Lider extends SingleAgent{
                data[i] = (byte) ja.get(i).asInt();
            }
 
-           FileOutputStream fos = new FileOutputStream("mitraza.png");
+           FileOutputStream fos = new FileOutputStream(this.mapa + "-"+ this.conversationID + ".png");
            fos.write(data);
            fos.close();
            System.out.println("Traza Guardada en mitraza.png");
@@ -378,7 +486,7 @@ public class Lider extends SingleAgent{
      */
     private void actualizarMapaLider(ACLMessage inbox) {
             
-        System.out.println(inbox.getContent());
+        //System.out.println(inbox.getContent());
         
         String mensaje = inbox.getContent();
           
@@ -421,6 +529,7 @@ public class Lider extends SingleAgent{
 
             }
   **/         
+            //System.out.println("Enviando a Memoria los parametros: " + nombreV + "," + px + "," + py + "," + sensor);
             memoria.actuMapa(nombreV, px, py, sensor);
         
     System.out.println("Tengo memoria");
@@ -444,6 +553,58 @@ public class Lider extends SingleAgent{
              outbox.setPerformative(ACLMessage.DISCONFIRM);
         }
          this.send(outbox);  
+    }
+
+    private String enviarMapa(ACLMessage inbox) {
+        
+        System.out.println("!!!!!!!! HE ENTRADO EN ENVIARMAPA!!!!!");
+        
+        String nombre_agente = inbox.getSender().name;
+        int tam = 0;
+        
+        switch(this.memoria.getTipo(nombre_agente)){
+            case DRON:
+                tam = 9;
+                
+                break;
+            case COCHE:
+                tam = 25;
+                
+                break;
+            case CAMION:
+                tam = 121;
+                
+                break;
+        }
+        
+        ArrayList<Integer> mapa_lider = this.memoria.obtenerMapaParcial(nombre_agente);
+        
+        System.out.println("El mapa recibido tiene: " + mapa_lider.size());
+        
+        
+//        this.outbox = new ACLMessage();
+//        this.outbox.setSender(new AgentID(this.getAid().name));
+//        this.outbox.setReceiver(new AgentID(nombre_agente));
+        
+        JsonObject objeto = new JsonObject();
+        //JsonArray vector = new JsonArray();
+        String vector = "";
+        for(int i = 0; i < tam; i++){
+            //vector.add(mapa_lider.get(i));
+            vector += mapa_lider.get(i) + "-";
+        }
+        
+        
+        
+        //objeto.add("mapa", vector);
+        
+//        this.outbox.setConversationId("pedirMapa");
+//        this.outbox.setContent(vector);
+//        this.outbox.setPerformative(ACLMessage.INFORM);
+//       
+//        this.send(this.outbox);
+        System.out.println("ENVIANDO MENSAJE A " + nombre_agente);
+        return vector; 
     }
     
     

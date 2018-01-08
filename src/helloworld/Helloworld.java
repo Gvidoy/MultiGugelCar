@@ -20,7 +20,7 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Helloworld {
 
-    public static final String NOMBRE_AGENTE = "Kudry";
+    public static final String NOMBRE_AGENTE = "Agente581";
     private static String nombreLider = "Liderrr1";
     /**
      * @param args the command line arguments
@@ -40,14 +40,14 @@ public class Helloworld {
             a .start();
             
             Thread.sleep(5000); 
-            b = new Agente(new AgentID("Gregon95mm"));
+            b = new Agente(new AgentID("Agente582"));
             b .start();
             
             Thread.sleep(5000); 
-            d = new Agente( new AgentID("Dani"));
+            d = new Agente( new AgentID("Agente583"));
             d.start();
             Thread.sleep(5000); 
-            e = new Agente( new AgentID("Nacho"));
+            e = new Agente( new AgentID("Agente584"));
             e.start();
 
           
